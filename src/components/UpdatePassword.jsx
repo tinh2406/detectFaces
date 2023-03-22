@@ -1,8 +1,10 @@
-import { useContext, useState, } from "react";
+import {API_URL} from "@env"
+import { useContext, useState } from "react";
 import { Button, Text, TextInput, ToastAndroid, View } from "react-native";
 import axios from "axios"
 import { AuthContext } from "../contexts/authContext";
 export default function UpdatePassword({setUpdatePassword}){
+    // console.log(API_URL)
     const {user} = useContext(AuthContext)
     const [oldPassword,setOldPassword] = useState("")
     const [newPassword,setNewPassword] = useState("")
@@ -13,7 +15,7 @@ export default function UpdatePassword({setUpdatePassword}){
         if(!oldPassword || !newPassword)
         return
         try {
-            const res = await axios.post("http://192.168.43.98:3000/users/updatePassword",{phone:user.phone,password:oldPassword,newPassword})
+            const res = await axios.post(`${API_URL}:3000/users/updatePassword`,{phone:user.phone,password:oldPassword,newPassword})
             ToastAndroid.show(res.data.message,ToastAndroid.SHORT)
             setUpdatePassword(false)
         } catch (error) {

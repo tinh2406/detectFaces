@@ -1,5 +1,6 @@
 import {useState} from 'react'
 import { SafeAreaView, Text,View,StyleSheet, TextInput, Button } from "react-native"
+import Faces from '../components/Faces'
 
 
 export default function AddFace({navigation,route}){
@@ -26,6 +27,7 @@ export default function AddFace({navigation,route}){
             <Button
             title='Thêm'
             onPress={handleAddFace}/>
+            <Faces/>
         </SafeAreaView>
     )
 }

@@ -1,14 +1,12 @@
 import AuthContextProvider, { AuthContext } from "./src/contexts/authContext";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-
 import TabNavigator from "./src/components/TabNavigator";
 import GetFace from "./src/screens/GetFace";
-
 const Stack = createNativeStackNavigator()
 
 export default function App(){
-  
+
   return(
     <AuthContextProvider>
       <NavigationContainer>

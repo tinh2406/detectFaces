@@ -1,3 +1,4 @@
+import {API_URL} from "@env"
 import { useState, useRef, useEffect } from 'react'
 import { View, StyleSheet } from "react-native"
 import axios from 'axios';
@@ -17,7 +18,7 @@ export default function GetFace({ navigation, route }) {
   const [cameraRef, setCameraRef] = useState()
   const handlerFace = async ({ faces }) => {
     const handle = async () => {
-      if (faces[0] && faces[0].bounds.size.width > 200 && faces[0].bounds.size.height > 300) {
+      // if (faces[0] && faces[0].bounds.size.width > 200 && faces[0].bounds.size.height > 300) {
         try {
           if(takePicture){
             const photo = await cameraRef.takePictureAsync({ quality: 0.5, doNotSave: false, base64: true })
@@ -27,22 +28,23 @@ export default function GetFace({ navigation, route }) {
         } catch (error) {
           console.log(count)
         }
-        setBox({
-          w: faces[0].bounds.size.width,
-          h: faces[0].bounds.size.height,
-          x: faces[0].bounds.origin.x,
-          y: faces[0].bounds.origin.y,
-        });
-      } else {
-        setBox(null);
-      }
+        // setBox({
+        //   w: faces[0].bounds.size.width,
+        //   h: faces[0].bounds.size.height,
+        //   x: faces[0].bounds.origin.x,
+        //   y: faces[0].bounds.origin.y,
+        // });
+      // } else {
+      //   setBox(null);
+      // }
     }
     await handle()
   }
   const uploadImage = async (image) => {
     try {
       const { phone } = JSON.parse(await AsyncStorage.getItem('user'))
-      const res = await axios.post('http://192.168.43.98:3000/api/upload', { phone, name: route.params.name, count, image })
+      const res = await axios.post(`${API_URL}:3000/api/upload`, { phone, name: route.params.name, count, image })
+      // console.log(res)
       while(true){
         if (res.data.message === "success") {
           navigation.navigate("HomeTabs", { screen: "AddFace", message: "add face successfully" })
