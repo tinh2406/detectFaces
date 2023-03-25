@@ -23,9 +23,16 @@ export default function Login() {
             return
         }
         const user = res.data()
+        const address = []
+                    await Promise.all(user.addressDoor.map(async (device) => {
+                        const res = await device.get()
+                        if (res.exists) {
+                            address.push(res.data())
+                        }
+                    }))
+        user.addressDoor = address
         if (password === user.password) {
             await AsyncStorage.setItem("user", JSON.stringify({ ...user, phone }))
-            console.log(await AsyncStorage.getItem("user"))
             context.setUser({ ...user, phone })
             return
         }
@@ -36,16 +43,18 @@ export default function Login() {
     const handleUpdatePassword = async()=>{
         if(phone.length!=10 || newPassword!=confirmNewpassword || newPassword=="" || verify=="")
             return
-        var res = await firestore().collection('verifys').doc(phone).get()
-        if(!res.exists) return
+        const resRef = firestore().collection('verifys')
+        var docs = (await resRef.where('code','==', Number.parseInt(verify)).get()).docs
+        var res = docs.find(doc=>doc.id===phone)
+        if(!res){
+            ToastAndroid.show("Verify code incorrect",ToastAndroid.SHORT)
+            return
+        }
         if(res.data().expireAt.toDate()<new Date()){
             ToastAndroid.show("Request is expire",ToastAndroid.SHORT)
             return
         }
-        if(res.data().code.toString()!==verify){
-            ToastAndroid.show("Verify code incorrect",ToastAndroid.SHORT)
-            return
-        }
+        
         
         res = await firestore().collection('users').doc(phone).get()
         if(!res.exists) return

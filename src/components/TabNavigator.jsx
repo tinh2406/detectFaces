@@ -7,19 +7,18 @@ import User from "../screens/User";
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import Login from "../screens/Login";
 import firestore from "@react-native-firebase/firestore";
-
+import deepEqual from 'deep-equal';
 import { useContext, useEffect, useState } from "react";
-import { SafeAreaView, Text } from "react-native";
+import { SafeAreaView, Text, useAnimatedValue } from "react-native";
 import { AuthContext } from '../contexts/authContext';
 import { useNetInfo } from '@react-native-community/netinfo';
 
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator({ route }) {
-    const netInfo = useNetInfo()
+    const {isConnected} = useNetInfo()
     const [loading, setLoading] = useState(true)
     const { user, setUser } = useContext(AuthContext)
-    const [isConnected,setIsConnected] = useState(false)
     console.log(route)
     useEffect(() => {
         const checkLogin = async () => {
@@ -29,12 +28,19 @@ export default function TabNavigator({ route }) {
                     await setUser(JSON.parse(_user))
                 }
                 setLoading(false)
-                setIsConnected(netInfo.isConnected)
                 if(user && isConnected){
-                    const res = await firestore().collection('users').doc(user.phone).get()
-                    await AsyncStorage.setItem('user',JSON.stringify({...res.data(),phone:user.phone}))
-                    if(JSON.stringify({...res.data(),phone:user.phone})!=JSON.stringify(user)){
-                        await setUser({...res.data(),phone:user.phone})
+                    const data = (await firestore().collection('users').doc(user.phone).get()).data()
+                    const address = []
+                    await Promise.all(data.addressDoor.map(async (device) => {
+                        const res = await device.get()
+                        if (res.exists) {
+                            address.push(res.data())
+                        }
+                    }))
+                    data.addressDoor = address
+                    await AsyncStorage.setItem('user',JSON.stringify({...data,phone:user.phone}))
+                    if(!deepEqual({...data,phone:user.phone},user)){
+                        await setUser({...data,phone:user.phone})
                     }
                 }
                 return
@@ -44,7 +50,8 @@ export default function TabNavigator({ route }) {
         }
             
         checkLogin()
-    }, [user])
+    }, [user,isConnected])
+   
     if (loading)
         return <SafeAreaView>
             <Text>Loading...</Text>

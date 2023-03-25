@@ -5,73 +5,74 @@ import React, { useContext, useState } from "react";
 import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Button } from "react-native";
 import { AuthContext } from "../contexts/authContext";
 import AsyncStorage from "@react-native-async-storage/async-storage"
-
 import deepEqual from "deep-equal"
-export default function Notify() {
+
+
+export default function Historys() {
     const { user } = useContext(AuthContext)
-    const [notifys, setNotifys] = useState()
+    const [historys, setHistorys] = useState()
     const [numOfCurrent, setNumOfCurrent] = useState(10)
     const [has, setHas] = useState(true)
     const netInfor = useNetInfo()
     useFocusEffect(
         React.useCallback(() => {
-            const getNotifysLocal = async () => {
-                if(!notifys){
-                    setNotifys(JSON.parse(await AsyncStorage.getItem('notifys')))
+            const getHistorysLocal = async () => {
+                if(!historys){
+                    setHistorys(JSON.parse(await AsyncStorage.getItem('historys')))
                 }
             }
-            getNotifysLocal()
-            return () => { getNotifysLocal }
+            getHistorysLocal()
+            return () => { getHistorysLocal }
         }, [])
     )
     useFocusEffect(
         React.useCallback(() => {
             const intervalId = setInterval(() => {
-                updateNotify();
+                updateHistory();
             }, 3000)
-            const updateNotify = async () => {
+            const updateHistory = async () => {
                 if (netInfor.isConnected) {
 
-                    const notis = await getNotifys()
-                    if (!deepEqual(notifys,notis)) {
-                        await setNotis(notis)
+                    const hists = await getHistorys()
+                    if (!deepEqual(historys,hists)) {
+                        await setHists(hists)
                         if(numOfCurrent==10){
-                            await AsyncStorage.setItem('notifys',JSON.stringify(notis))
+                            await AsyncStorage.setItem('historys',JSON.stringify(hists))
                         }
-                        console.log("reset notifys")
+                        console.log("reset historys")
                     }
                 }
             }
             return () => { clearInterval(intervalId) }
-        }, [netInfor,notifys,numOfCurrent])
+        }, [netInfor,historys,numOfCurrent])
     )
-    const getNotifys = async () => {
+    const getHistorys = async () => {
         const userRef = firestore().collection('users').doc(user.phone)
         const addressDoor = (await userRef.get()).data().addressDoor
-        const notifysDocs = (await firestore().collection('notifys').where('device', 'in', addressDoor).orderBy("createAt", 'desc').limit(numOfCurrent).get()).docs
-        setHas((await firestore().collection('notifys').where('device', 'in', addressDoor).get()).size > numOfCurrent)
-        const notis = []
-        await Promise.all(notifysDocs.map(async (doc) => {
+        const historysDocs = (await firestore().collection('historys').where('device', 'in', addressDoor).orderBy("createAt", 'desc').limit(numOfCurrent).get()).docs
+        setHas((await firestore().collection('historys').where('device', 'in', addressDoor).get()).size > numOfCurrent)
+        const hists = []
+        await Promise.all(historysDocs.map(async (doc) => {
             const device = (await doc.data().device.get()).data()
             const createAt = await doc.data().createAt.toDate().toString()
-            const notify = { createAt, device, message: doc.data().message, id: doc.id }
+            const history = { createAt, device, message: doc.data().message, id: doc.id }
             if (doc.exists) {
-                notis.push(notify)
+                hists.push(history)
             }
         }))
-        return notis
+        return hists
     }
-    const setNotis = async(notis)=>{
-        setNotifys(notis)
+    const setHists = async(hists)=>{
+        setHistorys(hists)
     }
     return (
         <SafeAreaView style={{ backgroundColor: "black", flex: 1 }}>
             <Text>
-                Notify
+                Historys
             </Text>
             {netInfor.isConnected &&
                 <FlatList
-                    data={notifys}
+                    data={historys}
                     renderItem={({ item }) => <Item notify={item} />}
                     keyExtractor={item => item.id}
                     item

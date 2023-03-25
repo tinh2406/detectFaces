@@ -1,22 +1,34 @@
 import {API_URL} from "@env"
-import { async } from "@firebase/util"
 import { useFocusEffect } from "@react-navigation/native"
 import axios from "axios"
 import React, { useContext, useState } from "react"
 import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native"
 import { AuthContext } from "../contexts/authContext"
-
+import AsyncStorage from "@react-native-async-storage/async-storage"
 export default function Faces(){
     const [registeredFaces,setRegisteredFaces] = useState([])
     const {user} = useContext(AuthContext)
+    useFocusEffect(
+        React.useCallback(()=>{
+            const getFacesLocal = async()=>{
+                if(!registeredFaces){
+                    setRegisteredFaces(JSON.parse(await AsyncStorage.getItem('faces')))
+                }
+            }
+            getFacesLocal()
+            return ()=>{getFacesLocal}
+        },[])
+    )
     useFocusEffect(
         React.useCallback(()=>{
             console.log("use effect loop")
             const fetch = async()=>{
                 try {
                     const {data:{data}} = await axios.get(`${API_URL}:3000/faces/${user.phone}`)
-                    if(data!=registeredFaces)
+                    if(data!=registeredFaces){
                         setRegisteredFaces(data)
+                        await AsyncStorage.setItem('faces',JSON.stringify(data))
+                    }
                     } catch (error) {
                         console.log(error.message)
                     }
@@ -25,7 +37,7 @@ export default function Faces(){
                 fetch();
             },1000)
             return ()=>{clearInterval(intervalId)}
-        },[])
+        },[registeredFaces])
     )
     return(
         <View>
