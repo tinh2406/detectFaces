@@ -22,7 +22,7 @@ export default function Notify() {
             }
             getNotifysLocal()
             return () => { getNotifysLocal }
-        }, [])
+        }, [notifys])
     )
     useFocusEffect(
         React.useCallback(() => {

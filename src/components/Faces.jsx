@@ -6,7 +6,7 @@ import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native"
 import { AuthContext } from "../contexts/authContext"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 export default function Faces(){
-    const [registeredFaces,setRegisteredFaces] = useState([])
+    const [registeredFaces,setRegisteredFaces] = useState()
     const {user} = useContext(AuthContext)
     useFocusEffect(
         React.useCallback(()=>{

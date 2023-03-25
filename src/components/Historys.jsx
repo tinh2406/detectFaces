@@ -23,7 +23,7 @@ export default function Historys() {
             }
             getHistorysLocal()
             return () => { getHistorysLocal }
-        }, [])
+        }, [historys])
     )
     useFocusEffect(
         React.useCallback(() => {
