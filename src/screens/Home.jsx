@@ -1,16 +1,17 @@
-import { SafeAreaView, Text } from "react-native"
+import { SafeAreaView } from "react-native"
 import Historys from "../components/Historys"
 
+import React from "react"
 
 
+export default function Home({ navigation }) {
 
-export default function Home({navigation}){
-    
-    return(
-        <SafeAreaView style={{backgroundColor:"black",flex:1}}>
-            <Historys/>
-            
+
+    return (
+        <SafeAreaView style={{ backgroundColor: "black", flex: 1 }}>
+            <Historys />
+
         </SafeAreaView>
-        
+
     )
 }

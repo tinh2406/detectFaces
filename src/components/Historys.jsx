@@ -14,6 +14,8 @@ export default function Historys() {
     const [numOfCurrent, setNumOfCurrent] = useState(10)
     const [has, setHas] = useState(true)
     const netInfor = useNetInfo()
+    const [addressDoor, setAddressDoor] = useState()
+    
     useFocusEffect(
         React.useCallback(() => {
             const getHistorysLocal = async () => {
@@ -27,44 +29,49 @@ export default function Historys() {
     )
     useFocusEffect(
         React.useCallback(() => {
-            const intervalId = setInterval(() => {
-                updateHistory();
-            }, 3000)
-            const updateHistory = async () => {
-                if (netInfor.isConnected) {
-
-                    const hists = await getHistorys()
-                    if (!deepEqual(historys,hists)) {
-                        await setHists(hists)
-                        if(numOfCurrent==10){
-                            await AsyncStorage.setItem('historys',JSON.stringify(hists))
-                        }
-                        console.log("reset historys")
-                    }
+            const userRef = firestore().collection('users').doc(user.phone)
+            const unsubscribe = userRef.onSnapshot(
+                async (doc) => {
+                    setAddressDoor(doc.data().addressDoor)
+                    console.log(addressDoor, "luong address")
                 }
-            }
-            return () => { clearInterval(intervalId) }
-        }, [netInfor,historys,numOfCurrent])
+            )
+
+            return () => unsubscribe()
+        }, [])
     )
-    const getHistorys = async () => {
-        const userRef = firestore().collection('users').doc(user.phone)
-        const addressDoor = (await userRef.get()).data().addressDoor
-        const historysDocs = (await firestore().collection('historys').where('device', 'in', addressDoor).orderBy("createAt", 'desc').limit(numOfCurrent).get()).docs
-        setHas((await firestore().collection('historys').where('device', 'in', addressDoor).get()).size > numOfCurrent)
-        const hists = []
-        await Promise.all(historysDocs.map(async (doc) => {
-            const device = (await doc.data().device.get()).data()
-            const createAt = await doc.data().createAt.toDate().toString()
-            const history = { createAt, device, message: doc.data().message, id: doc.id }
-            if (doc.exists) {
-                hists.push(history)
+    useFocusEffect(
+        React.useCallback(() => {
+            if (addressDoor) {
+                const historysRef = firestore().collection('historys').where('device', 'in', addressDoor).orderBy("createAt", 'desc').limit(numOfCurrent);
+                const unsubscribe = historysRef.onSnapshot(
+                    async (snapshot) => {
+                        setHas((await firestore().collection('historys').where('device', 'in', addressDoor).get()).size > numOfCurrent);
+                        const hists = [];
+                        await Promise.all(snapshot.docs.map(async (doc) => {
+                            const device = (await doc.data().device.get()).data();
+                            const createAt = await doc.data().createAt.toDate().toString();
+                            const history = { createAt, device, message: doc.data().message, id: doc.id };
+                            if (doc.exists) {
+                                hists.push(history);
+                            }
+                        }));
+                        console.log(deepEqual(historys, hists));
+                        if (!deepEqual(historys, hists)) {
+                            setHistorys(hists);
+                            if (numOfCurrent == 10) {
+                                await AsyncStorage.setItem('historys', JSON.stringify(hists));
+                            }
+                            console.log("reset historys");
+                        }
+                    }
+                )
+                return () => {
+                    unsubscribe()
+                };
             }
-        }))
-        return hists
-    }
-    const setHists = async(hists)=>{
-        setHistorys(hists)
-    }
+        }, [netInfor, historys, numOfCurrent, addressDoor])
+    );
     return (
         <SafeAreaView style={{ backgroundColor: "black", flex: 1 }}>
             <Text>

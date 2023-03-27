@@ -11,12 +11,13 @@ export default function Notify() {
     const { user } = useContext(AuthContext)
     const [notifys, setNotifys] = useState()
     const [numOfCurrent, setNumOfCurrent] = useState(10)
+    const [addressDoor, setAddressDoor] = useState()
     const [has, setHas] = useState(true)
     const netInfor = useNetInfo()
     useFocusEffect(
         React.useCallback(() => {
             const getNotifysLocal = async () => {
-                if(!notifys){
+                if (!notifys) {
                     setNotifys(JSON.parse(await AsyncStorage.getItem('notifys')))
                 }
             }
@@ -26,44 +27,50 @@ export default function Notify() {
     )
     useFocusEffect(
         React.useCallback(() => {
-            const intervalId = setInterval(() => {
-                updateNotify();
-            }, 3000)
-            const updateNotify = async () => {
-                if (netInfor.isConnected) {
-
-                    const notis = await getNotifys()
-                    if (!deepEqual(notifys,notis)) {
-                        await setNotis(notis)
-                        if(numOfCurrent==10){
-                            await AsyncStorage.setItem('notifys',JSON.stringify(notis))
-                        }
-                        console.log("reset notifys")
-                    }
+            const userRef = firestore().collection('users').doc(user.phone)
+            const unsubscribe = userRef.onSnapshot(
+                async (doc) => {
+                    setAddressDoor(doc.data().addressDoor)
+                    console.log(addressDoor, "luong address")
                 }
-            }
-            return () => { clearInterval(intervalId) }
-        }, [netInfor,notifys,numOfCurrent])
+            )
+
+            return () => unsubscribe()
+        }, [])
     )
-    const getNotifys = async () => {
-        const userRef = firestore().collection('users').doc(user.phone)
-        const addressDoor = (await userRef.get()).data().addressDoor
-        const notifysDocs = (await firestore().collection('notifys').where('device', 'in', addressDoor).orderBy("createAt", 'desc').limit(numOfCurrent).get()).docs
-        setHas((await firestore().collection('notifys').where('device', 'in', addressDoor).get()).size > numOfCurrent)
-        const notis = []
-        await Promise.all(notifysDocs.map(async (doc) => {
-            const device = (await doc.data().device.get()).data()
-            const createAt = await doc.data().createAt.toDate().toString()
-            const notify = { createAt, device, message: doc.data().message, id: doc.id }
-            if (doc.exists) {
-                notis.push(notify)
+    useFocusEffect(
+        React.useCallback(() => {
+            if (addressDoor) {
+                const notifysRef = firestore().collection('notifys').where('device', 'in', addressDoor).orderBy("createAt", 'desc').limit(numOfCurrent);
+                const unsubscribe = notifysRef.onSnapshot(
+                    async (snapshot) => {
+                        setHas((await firestore().collection('notifys').where('device', 'in', addressDoor).get()).size > numOfCurrent);
+                        const notis = [];
+                        await Promise.all(snapshot.docs.map(async (doc) => {
+                            const device = (await doc.data().device.get()).data();
+                            const createAt = await doc.data().createAt.toDate().toString();
+                            const notify = { createAt, device, message: doc.data().message, id: doc.id };
+                            if (doc.exists) {
+                                notis.push(notify);
+                            }
+                        }));
+                        console.log(deepEqual(notifys, notis));
+                        if (!deepEqual(notifys, notis)) {
+                            setNotifys(notis);
+                            if (numOfCurrent == 10) {
+                                await AsyncStorage.setItem('notifys', JSON.stringify(notis));
+                            }
+                            console.log("reset notifys");
+                        }
+                    }
+                )
+                return () => {
+                    unsubscribe()
+                };
             }
-        }))
-        return notis
-    }
-    const setNotis = async(notis)=>{
-        setNotifys(notis)
-    }
+        }, [netInfor, notifys, numOfCurrent, addressDoor])
+    );
+
     return (
         <SafeAreaView style={{ backgroundColor: "black", flex: 1 }}>
             <Text>
@@ -77,7 +84,7 @@ export default function Notify() {
                     item
                 >
                 </FlatList>}
-            {has && <Button onPress={() => {setNumOfCurrent(numOfCurrent + 10) }} title="Load more"></Button>}
+            {has && <Button onPress={() => { setNumOfCurrent(numOfCurrent + 10) }} title="Load more"></Button>}
         </SafeAreaView>
     )
 }

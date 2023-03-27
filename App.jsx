@@ -1,12 +1,21 @@
-import AuthContextProvider, { AuthContext } from "./src/contexts/authContext";
+import messaging from "@react-native-firebase/messaging";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useEffect } from "react";
+import { Alert } from "react-native";
 import TabNavigator from "./src/components/TabNavigator";
+import AuthContextProvider from "./src/contexts/authContext";
 import GetFace from "./src/screens/GetFace";
 const Stack = createNativeStackNavigator()
 
 export default function App(){
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      Alert.alert('Thông báo', JSON.stringify(remoteMessage));
+    });
 
+    return unsubscribe;
+  }, []);
   return(
     <AuthContextProvider>
       <NavigationContainer>
