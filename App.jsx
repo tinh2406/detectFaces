@@ -6,22 +6,27 @@ import { Alert } from "react-native";
 import TabNavigator from "./src/components/TabNavigator";
 import AuthContextProvider from "./src/contexts/authContext";
 import GetFace from "./src/screens/GetFace";
+import Notify from "./src/screens/Notify";
+import UpdateNotifyBackground from "./src/utils/updateNotify";
 const Stack = createNativeStackNavigator()
 
 export default function App(){
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       Alert.alert('Thông báo', JSON.stringify(remoteMessage));
+      UpdateNotifyBackground()
     });
 
     return unsubscribe;
   }, []);
+
   return(
     <AuthContextProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown:false}}>
           <Stack.Screen name="HomeTabs" component={TabNavigator}/>
           <Stack.Screen name="GetFace" component={GetFace}/>
+          <Stack.Screen name="Notify" component={Notify}/>
         </Stack.Navigator>
       </NavigationContainer>
     </AuthContextProvider>

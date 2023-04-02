@@ -9,12 +9,11 @@ import deepEqual from "deep-equal"
 
 
 export default function Historys() {
-    const { user } = useContext(AuthContext)
+    const {addressDoorRef } = useContext(AuthContext)
     const [historys, setHistorys] = useState()
     const [numOfCurrent, setNumOfCurrent] = useState(10)
     const [has, setHas] = useState(true)
     const netInfor = useNetInfo()
-    const [addressDoor, setAddressDoor] = useState()
     
     useFocusEffect(
         React.useCallback(() => {
@@ -27,26 +26,14 @@ export default function Historys() {
             return () => { getHistorysLocal }
         }, [historys])
     )
+    
     useFocusEffect(
         React.useCallback(() => {
-            const userRef = firestore().collection('users').doc(user.phone)
-            const unsubscribe = userRef.onSnapshot(
-                async (doc) => {
-                    setAddressDoor(doc.data().addressDoor)
-                    console.log(addressDoor, "luong address")
-                }
-            )
-
-            return () => unsubscribe()
-        }, [])
-    )
-    useFocusEffect(
-        React.useCallback(() => {
-            if (addressDoor) {
-                const historysRef = firestore().collection('historys').where('device', 'in', addressDoor).orderBy("createAt", 'desc').limit(numOfCurrent);
+            if (addressDoorRef) {
+                const historysRef = firestore().collection('historys').where('device', 'in', addressDoorRef).orderBy("createAt", 'desc').limit(numOfCurrent);
                 const unsubscribe = historysRef.onSnapshot(
                     async (snapshot) => {
-                        setHas((await firestore().collection('historys').where('device', 'in', addressDoor).get()).size > numOfCurrent);
+                        setHas((await firestore().collection('historys').where('device', 'in', addressDoorRef).get()).size > numOfCurrent);
                         const hists = [];
                         await Promise.all(snapshot.docs.map(async (doc) => {
                             const device = (await doc.data().device.get()).data();
@@ -70,7 +57,7 @@ export default function Historys() {
                     unsubscribe()
                 };
             }
-        }, [netInfor, historys, numOfCurrent, addressDoor])
+        }, [netInfor, historys, numOfCurrent, addressDoorRef])
     );
     return (
         <SafeAreaView style={{ backgroundColor: "black", flex: 1 }}>

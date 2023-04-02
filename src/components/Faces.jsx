@@ -1,13 +1,14 @@
-import {API_URL} from "@env"
+import { API_URL } from "@env"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useFocusEffect } from "@react-navigation/native"
 import axios from "axios"
 import React, { useContext, useState } from "react"
 import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native"
 import { AuthContext } from "../contexts/authContext"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 export default function Faces(){
     const [registeredFaces,setRegisteredFaces] = useState()
     const {user} = useContext(AuthContext)
+    const [network,setNetwork] = useState()
     useFocusEffect(
         React.useCallback(()=>{
             const getFacesLocal = async()=>{
@@ -21,8 +22,8 @@ export default function Faces(){
     )
     useFocusEffect(
         React.useCallback(()=>{
-            console.log("use effect loop")
             const fetch = async()=>{
+                console.log("use effect loop")
                 try {
                     const {data:{data}} = await axios.get(`${API_URL}:3000/faces/${user.phone}`)
                     if(data!=registeredFaces){
@@ -31,13 +32,14 @@ export default function Faces(){
                     }
                     } catch (error) {
                         console.log(error.message)
+                        setNetwork(error)
                     }
                 }
             const intervalId = setInterval(()=>{
                 fetch();
             },1000)
             return ()=>{clearInterval(intervalId)}
-        },[registeredFaces])
+        },[registeredFaces,network])
     )
     return(
         <View>

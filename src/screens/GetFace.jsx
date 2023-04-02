@@ -1,12 +1,15 @@
-import {API_URL} from "@env"
-import { useState, useRef, useEffect } from 'react'
-import { View, StyleSheet, Text } from "react-native"
+import { API_URL } from "@env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
-import { RNCamera } from "react-native-camera"
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useContext, useState } from 'react';
+import { StyleSheet, Text, View } from "react-native";
+import { RNCamera } from "react-native-camera";
+import { AuthContext } from "../contexts/authContext";
 
 export default function GetFace({ navigation, route }) {
+  
   const type = RNCamera.Constants.Type.front;
+  const {user:{phone}} = useContext(AuthContext)
   const [count, setCount] = useState(0)
   const [message,setMessage] = useState()
   const [takePicture,setTakePicture] = useState(true)
@@ -16,6 +19,7 @@ export default function GetFace({ navigation, route }) {
     w: 0,
     h: 0
   });
+  const [error,setError] = useState()
   const [cameraRef, setCameraRef] = useState()
   const handlerFace = async ({ faces }) => {
     const handle = async () => {
@@ -69,8 +73,9 @@ export default function GetFace({ navigation, route }) {
           setMessage(res.data.message)
           return true
       }
-      
+      setError()
     } catch (error) {
+      setError(error.message)
       console.log(error)
     }
   };
@@ -98,6 +103,7 @@ export default function GetFace({ navigation, route }) {
       )}
       <Text style={{position:"absolute",fontSize:30,color:"green"}}>{5-count}</Text>
       {message&&<Text style={{position:"absolute",fontSize:30,color:"green",bottom:0}}>{message}</Text>}
+      {error&&<Text style={{position:"absolute",fontSize:30,color:"green",bottom:0}}>{error}</Text>}
     </View>
   );
 }
