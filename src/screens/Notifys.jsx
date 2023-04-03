@@ -3,7 +3,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useContext, useState } from "react";
-import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Button, Image } from "react-native";
+import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Button, Image, ActivityIndicator } from "react-native";
 import { AuthContext } from "../contexts/authContext";
 import AsyncStorage from "@react-native-async-storage/async-storage"
 
@@ -14,7 +14,8 @@ export default function Notifys({navigation}) {
     const { user,addressDoorRef } = useContext(AuthContext)
     const [notifys, setNotifys] = useState()
     const [numOfCurrent, setNumOfCurrent] = useState(10)
-    const [has, setHas] = useState(true)
+    const [loadMoreLoading, setLoadMoreLoading] = useState(false)
+    const [has, setHas] = useState(false)
     const netInfor = useNetInfo()
     useFocusEffect(
         React.useCallback(() => {
@@ -44,6 +45,7 @@ export default function Notifys({navigation}) {
                         }));
                         console.log(deepEqual(notifys, notis));
                         if (!deepEqual(notifys, notis)) {
+                            setLoadMoreLoading(false)
                             setNotifys(notis);
                             if (numOfCurrent == 10) {
                                 await AsyncStorage.setItem('notifys', JSON.stringify(notis));
@@ -71,7 +73,17 @@ export default function Notifys({navigation}) {
                     item
                 >
                 </FlatList>}
-            {has && <Button onPress={() => { setNumOfCurrent(numOfCurrent + 10) }} title="Load more"></Button>}
+                {has && <View
+                >
+                {loadMoreLoading?
+                <ActivityIndicator size="large" color={"#ffffff"} />
+                :
+                <Button
+                onPress={() => { setLoadMoreLoading(true); setNumOfCurrent(numOfCurrent + 10) }}
+                disabled={loadMoreLoading}
+                title="Load more"
+                />}
+                </View>}
         </SafeAreaView>
     )
 }

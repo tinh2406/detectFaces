@@ -1,35 +1,46 @@
 import messaging from "@react-native-firebase/messaging";
-import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import TabNavigator from "./src/components/TabNavigator";
-import AuthContextProvider from "./src/contexts/authContext";
 import GetFace from "./src/screens/GetFace";
 import Notify from "./src/screens/Notify";
 import UpdateNotifyBackground from "./src/utils/updateNotify";
+import { useNavigation } from "@react-navigation/native";
 const Stack = createNativeStackNavigator()
 
 export default function App(){
+  const [initialRoute,setInitialRoute] = useState("HomeTabs")
+  const navigation = useNavigation();
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert('Thông báo', JSON.stringify(remoteMessage));
+    const unsubscribe = messaging().onMessage(async ({notification}) => {
+
+      const body = JSON.parse(notification.body)
+      Alert.alert(notification.title, body.message,[
+        {
+          text: 'Cancel',
+          onPress: () => {},
+          style: 'cancel',
+        },
+        {
+          text: 'View',
+          onPress: () => {
+            navigation.navigate('Notify',{id:body.id});
+          },
+        }
+      ]);
       UpdateNotifyBackground()
     });
 
     return unsubscribe;
   }, []);
-
+  console.log(initialRoute)
   return(
-    <AuthContextProvider>
-      <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown:false}}>
           <Stack.Screen name="HomeTabs" component={TabNavigator}/>
           <Stack.Screen name="GetFace" component={GetFace}/>
           <Stack.Screen name="Notify" component={Notify}/>
         </Stack.Navigator>
-      </NavigationContainer>
-    </AuthContextProvider>
   )
 }
 

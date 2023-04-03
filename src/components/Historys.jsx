@@ -2,23 +2,24 @@ import { useNetInfo } from "@react-native-community/netinfo";
 import firestore from "@react-native-firebase/firestore";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useContext, useState } from "react";
-import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Button } from "react-native";
+import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Button, ActivityIndicator } from "react-native";
 import { AuthContext } from "../contexts/authContext";
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import deepEqual from "deep-equal"
 
 
 export default function Historys() {
-    const {addressDoorRef } = useContext(AuthContext)
+    const { addressDoorRef } = useContext(AuthContext)
     const [historys, setHistorys] = useState()
     const [numOfCurrent, setNumOfCurrent] = useState(10)
-    const [has, setHas] = useState(true)
+    const [has, setHas] = useState(false)
+    const [loadMoreLoading, setLoadMoreLoading] = useState(false)
     const netInfor = useNetInfo()
-    
+
     useFocusEffect(
         React.useCallback(() => {
             const getHistorysLocal = async () => {
-                if(!historys){
+                if (!historys) {
                     setHistorys(JSON.parse(await AsyncStorage.getItem('historys')))
                 }
             }
@@ -26,13 +27,14 @@ export default function Historys() {
             return () => { getHistorysLocal }
         }, [historys])
     )
-    
+
     useFocusEffect(
         React.useCallback(() => {
             if (addressDoorRef) {
                 const historysRef = firestore().collection('historys').where('device', 'in', addressDoorRef).orderBy("createAt", 'desc').limit(numOfCurrent);
                 const unsubscribe = historysRef.onSnapshot(
                     async (snapshot) => {
+                        console.log("có thay đổi")
                         setHas((await firestore().collection('historys').where('device', 'in', addressDoorRef).get()).size > numOfCurrent);
                         const hists = [];
                         await Promise.all(snapshot.docs.map(async (doc) => {
@@ -46,6 +48,7 @@ export default function Historys() {
                         console.log(deepEqual(historys, hists));
                         if (!deepEqual(historys, hists)) {
                             setHistorys(hists);
+                            setLoadMoreLoading(false)
                             if (numOfCurrent == 10) {
                                 await AsyncStorage.setItem('historys', JSON.stringify(hists));
                             }
@@ -72,7 +75,17 @@ export default function Historys() {
                     item
                 >
                 </FlatList>}
-            {has && <Button onPress={() => {setNumOfCurrent(numOfCurrent + 10) }} title="Load more"></Button>}
+            {has && <View
+                >
+                {loadMoreLoading?
+                <ActivityIndicator size="large" color={"#ffffff"} />
+                :
+                <Button
+                onPress={() => { setLoadMoreLoading(true); setNumOfCurrent(numOfCurrent + 10) }}
+                disabled={loadMoreLoading}
+                title="Load more"
+                />}
+                </View>}
         </SafeAreaView>
     )
 }
