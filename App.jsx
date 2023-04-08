@@ -1,22 +1,21 @@
-import messaging from "@react-native-firebase/messaging";
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from "react";
-import { Alert } from "react-native";
-import TabNavigator from "./src/components/TabNavigator";
-import GetFace from "./src/screens/GetFace";
-import Notify from "./src/screens/Notify";
-import UpdateNotifyBackground from "./src/utils/updateNotify";
-import { useNavigation } from "@react-navigation/native";
-const Stack = createNativeStackNavigator()
+import messaging from '@react-native-firebase/messaging';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React, {useEffect, useState} from 'react';
+import {Alert} from 'react-native';
+import TabNavigator from './src/components/TabNavigator';
+import GetFace from './src/screens/GetFace';
+import Notify from './src/screens/Notify';
+import UpdateNotifyBackground from './src/utils/updateNotify';
+import {useNavigation} from '@react-navigation/native';
+const Stack = createNativeStackNavigator();
 
-export default function App(){
-  const [initialRoute,setInitialRoute] = useState("HomeTabs")
+export default function App() {
+  const [initialRoute, setInitialRoute] = useState('HomeTabs');
   const navigation = useNavigation();
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async ({notification}) => {
-
-      const body = JSON.parse(notification.body)
-      Alert.alert(notification.title, body.message,[
+      const body = JSON.parse(notification.body);
+      Alert.alert(notification.title, body.message, [
         {
           text: 'Cancel',
           onPress: () => {},
@@ -25,28 +24,24 @@ export default function App(){
         {
           text: 'View',
           onPress: () => {
-            navigation.navigate('Notify',{id:body.id});
+            navigation.navigate('Notify', {id: body.id});
           },
-        }
+        },
       ]);
-      UpdateNotifyBackground()
+      UpdateNotifyBackground();
     });
 
     return unsubscribe;
   }, []);
-  console.log(initialRoute)
-  return(
-        <Stack.Navigator screenOptions={{headerShown:false}}>
-          <Stack.Screen name="HomeTabs" component={TabNavigator}/>
-          <Stack.Screen name="GetFace" component={GetFace}/>
-          <Stack.Screen name="Notify" component={Notify}/>
-        </Stack.Navigator>
-  )
+  console.log(initialRoute);
+  return (
+    <Stack.Navigator screenOptions={{headerShown: false}}>
+      <Stack.Screen name="HomeTabs" component={TabNavigator} />
+      <Stack.Screen name="GetFace" component={GetFace} />
+      <Stack.Screen name="Notify" component={Notify} />
+    </Stack.Navigator>
+  );
 }
-
-
-
-
 
 // import React, { useState } from 'react';
 // import { View, Image, Button } from 'react-native';
@@ -92,11 +87,6 @@ export default function App(){
 //     </View>
 //   );
 // };
-
-
-
-
-
 
 // 'use strict';
 // import React, { PureComponent, useState } from 'react';
@@ -170,7 +160,6 @@ export default function App(){
 
 // export default App;
 
-
 // import {getDatabase,ref,set,onValue} from 'firebase/database';
 // import React, { useState, useEffect } from 'react';
 // import { FlatList, Text, View, TextInput, Button } from 'react-native';
@@ -241,7 +230,6 @@ export default function App(){
 
 // import firestore from '@react-native-firebase/firestore';
 
-
 // export default function App(){
 
 //   const unmount =async ()=>{
@@ -250,8 +238,6 @@ export default function App(){
 //   console.log(doc.id)})
 //   }
 
-
-  
 //   return(
 // <View>
 // <Text>Hello world</Text>
