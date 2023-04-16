@@ -6,6 +6,7 @@ import messaging from '@react-native-firebase/messaging'
 import UpdateNotifyBackground from './src/utils/updateNotify';
 
 PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
 
 
 firebaseApp

@@ -86,6 +86,7 @@ export default function TabNavigator({route}) {
           tabBarIcon: ({color, size}) => (
             <Icon name="face" color={color} size={size} />
           ),
+          headerShown: false 
         }}
       />
       <Tab.Screen
@@ -96,6 +97,7 @@ export default function TabNavigator({route}) {
           tabBarIcon: ({color, size}) => (
             <Icon name="sensor-door" color={color} size={size} />
           ),
+          headerShown: false 
         }}
       />
       <Tab.Screen
@@ -106,6 +108,7 @@ export default function TabNavigator({route}) {
           tabBarIcon: ({color, size}) => (
             <Icon name="notifications-active" color={color} size={size} />
           ),
+          headerShown: false 
         }}
       />
       <Tab.Screen
@@ -116,6 +119,7 @@ export default function TabNavigator({route}) {
           tabBarIcon: ({color, size}) => (
             <Icon name="account-circle" color={color} size={size} />
           ),
+          // headerShown: false 
         }}
       />
     </Tab.Navigator>

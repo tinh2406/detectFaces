@@ -1,6 +1,6 @@
 import messaging from '@react-native-firebase/messaging';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Alert} from 'react-native';
 import TabNavigator from './src/components/TabNavigator';
 import GetFace from './src/screens/GetFace';
@@ -13,9 +13,10 @@ export default function App() {
   const [initialRoute, setInitialRoute] = useState('HomeTabs');
   const navigation = useNavigation();
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async ({notification}) => {
-      const body = JSON.parse(notification.body);
-      Alert.alert(notification.title, body.message, [
+    const unsubscribe = messaging().onMessage(async ({notification,data}) => {
+      try {
+      const message = notification.body;
+      Alert.alert(notification.title, message, [
         {
           text: 'Cancel',
           onPress: () => {},
@@ -24,15 +25,31 @@ export default function App() {
         {
           text: 'View',
           onPress: () => {
-            navigation.navigate('Notify', {id: body.id});
+            navigation.navigate('Notify', {id: data.id});
           },
         },
       ]);
+    } catch (error) {
+      console.log(notification)
+      Alert.alert(notification.title,notification.body)
+    }
       UpdateNotifyBackground();
     });
 
     return unsubscribe;
   }, []);
+  useEffect(
+     useCallback(()=>{
+      const unsub = messaging().onNotificationOpenedApp(({data}) => {
+        // Lấy thông tin từ remoteMessage và chuyển hướng đến màn hình tương ứng
+        // Ví dụ: chuyển đến màn hình Message với message ID
+        console.log(data.id)
+        navigation.navigate('Notify', {id: data.id});
+      });
+      return unsub
+    },[]),[]
+  )
+ 
   console.log(initialRoute);
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>

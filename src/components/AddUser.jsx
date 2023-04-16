@@ -1,7 +1,7 @@
 import {API_URL} from "@env"
 import axios from "axios";
 import { useContext, useState } from "react";
-import { Button, Text, TextInput, ToastAndroid, View } from "react-native";
+import { Button, StyleSheet, Text, TextInput, ToastAndroid, View } from "react-native";
 import { AuthContext } from "../contexts/authContext";
 
 export default function AddUser({setAddUser}){
@@ -47,12 +47,23 @@ export default function AddUser({setAddUser}){
         }
     }
     return(
-        <View>
-            <TextInput value={phone} onChangeText={text=>setPhone(text)} placeholder="Phone number" style={{padding:10,marginVertical:5}}/>
-            <TextInput value={name} onChangeText={text=>setName(text)} placeholder="Name users" style={{padding:10,marginVertical:5}}/>
-            {openVerify&&<TextInput value={verification} onChangeText={text=>setVerification(text)} placeholder="Verification code" style={{padding:10,marginVertical:5}}/>}
+        <View style={{marginBottom:16}}>
+            <TextInput style={styles.textInput} value={phone} onChangeText={text=>setPhone(text)} placeholder="Phone number"/>
+            <TextInput style={styles.textInput} value={name} onChangeText={text=>setName(text)} placeholder="Name users"/>
+            {openVerify&&<TextInput style={styles.textInput} value={verification} onChangeText={text=>setVerification(text)} placeholder="Verification code"/>}
             <Button color={(name&&phone&&phone!==user.phone&&phone.trim().length===10)?"green":"gray"} title="Add users" onPress={handleCreateUser}/>
             {wrongVerifyCode&&<Text style={{fontSize:14,color:"blue"}} onPress={handleResendVerifyCode}>Resend verification code</Text>}
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    textInput: {
+        backgroundColor: "#606060",
+        marginBottom:12,
+        marginHorizontal:24,
+        padding: 12,
+        borderRadius: 10,
+        fontSize:16,
+    }
+})

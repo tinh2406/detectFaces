@@ -46,8 +46,8 @@ export default function AuthContextProvider({children}) {
           );
           if (!deepEqual({...data, addressDoor, phone: user.phone}, user)) {
             console.log('set lai user o day');
+            await AsyncStorage.setItem('user', JSON.stringify({...data, addressDoor, phone: user.phone}));
             setUser({...data, addressDoor, phone: user.phone});
-            await AsyncStorage.setItem('user', JSON.stringify(user));
           }
           setAddressDoorRef(data.addressDoor);
         });

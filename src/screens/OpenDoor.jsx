@@ -1,5 +1,5 @@
-import {API_URL} from '@env';
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import { API_URL } from '@env';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   FlatList,
   SafeAreaView,
@@ -9,20 +9,20 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import {AuthContext} from '../contexts/authContext';
-import {useNetInfo} from '@react-native-community/netinfo';
+import { AuthContext } from '../contexts/authContext';
+import { useNetInfo } from '@react-native-community/netinfo';
 import deepEqual from 'deep-equal';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import ToggleSwitch from 'toggle-switch-react-native';
 import prompt from 'react-native-prompt-android';
 import axios from 'axios';
 export default function OpenDoor() {
-  const {user} = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const netInfor = useNetInfo();
-  useFocusEffect(React.useCallback(() => {}, [netInfor]));
+  useFocusEffect(React.useCallback(() => { }, [netInfor]));
   return (
-    <SafeAreaView style={{backgroundColor: 'dodgerblue', flex: 1}}>
+    <SafeAreaView style={{ backgroundColor: 'dodgerblue', flex: 1 }}>
       <Text
         style={{
           textAlign: 'center',
@@ -37,7 +37,7 @@ export default function OpenDoor() {
       {netInfor.isConnected && (
         <FlatList
           data={user.addressDoor}
-          renderItem={({item}) => <Item address={item} />}
+          renderItem={({ item }) => <Item address={item} />}
           keyExtractor={item => item.addressDoor}
           item></FlatList>
       )}
@@ -45,31 +45,32 @@ export default function OpenDoor() {
   );
 }
 
-const Item = ({address}) => {
-  const {addressDoor, name, status} = address;
-  const {user, setUser} = useContext(AuthContext);
-  const {phone, owner} = user;
+const Item = ({ address }) => {
+  const { addressDoor, name, status } = address;
+  const { user, setUser } = useContext(AuthContext);
+  const { phone, owner } = user;
   const [loading, setLoading] = useState(false);
   const [resToggle, setResToggle] = useState();
-
   useFocusEffect(
     React.useCallback(() => {
       const fetch = async () => {
-        // console.log("getDoor loop")
         const door = (
           await firestore().collection('devices').doc(addressDoor).get()
         ).data();
+        // console.log(door,"so sanh",address)
         if (!deepEqual(address, door)) {
-          const newAddress = user.addressDoor.map(i => {
+          console.log('Sẽ cập nhật lại user do thay đổi trạng thái cửa')
+          const newAddress =await Promise.all(user.addressDoor.map(i => {
             if (i.addressDoor === door.addressDoor) return door;
             return i;
-          });
-          setUser({...user, addressDoor: newAddress});
+          }));
+          setUser({ ...user, addressDoor: newAddress });
+          setLoading(false)
         }
       };
       const intervalId = setInterval(() => {
         fetch();
-      }, 500);
+      }, 2000);
       return () => {
         clearInterval(intervalId);
       };
@@ -79,30 +80,35 @@ const Item = ({address}) => {
   const handleTogglePress = async () => {
     setLoading(true);
     if (status) {
-      const res = await axios.post(`${API_URL}:3000/lockDoor`, {
-        phone,
-        addressDoor,
-      });
-      console.log(status);
-      if (res.data.message === 'Locked') {
-        setResToggle(false);
+      try {
+        const res = await axios.post(`${API_URL}:3000/lockDoor`, {
+          phone,
+          addressDoor,
+        });
+        console.log(res.data, "res data")
+        console.log(status);
+        if (res.data.message === 'Locked') {
+          setResToggle(false);
+        }
+      } catch (error) {
+        Alert.alert(`${error}`)
       }
-      console.log(res.data.message);
     } else {
-      const res = await axios.post(`${API_URL}:3000/unlockDoor`, {
-        phone,
-        addressDoor,
-      });
-      console.log(status);
-      if (res.data.message === 'Unlocked') {
-        setResToggle(true);
+      try {
+        const res = await axios.post(`${API_URL}:3000/unlockDoor`, {
+          phone,
+          addressDoor,
+        });
+        console.log(res.data);
+        console.log(status);
+        if (res.data.message === 'Unlocked') {
+          setResToggle(true);
+        }
+      } catch (error) {
+        Alert.alert(`${error}`)
       }
-      console.log(res.data.message);
     }
   };
-  useEffect(() => {
-    if (status === resToggle) setLoading(false);
-  }, [status, resToggle]);
   const handleLongPress = () => {
     prompt(
       'Enter name',
@@ -115,7 +121,7 @@ const Item = ({address}) => {
           },
           style: 'cancel',
         },
-        {text: 'OK', onPress: updateName},
+        { text: 'OK', onPress: updateName },
       ],
       {
         type: 'text',
@@ -131,7 +137,7 @@ const Item = ({address}) => {
       await firestore()
         .collection('devices')
         .doc(addressDoor)
-        .set({name}, {merge: true});
+        .set({ name }, { merge: true });
     }
   };
   return (
@@ -147,14 +153,14 @@ const Item = ({address}) => {
           margin: 8,
           padding: 8,
         }}>
-        <View style={{flexDirection: 'column'}}>
-          <Text style={{color: 'black', fontSize: 16}}>{addressDoor}</Text>
-          <Text style={{color: 'black', fontSize: 16}}>{name}</Text>
+        <View style={{ flexDirection: 'column' }}>
+          <Text style={{ color: 'black', fontSize: 16 }}>{addressDoor}</Text>
+          <Text style={{ color: 'black', fontSize: 16 }}>{name}</Text>
         </View>
         {loading ? (
           <ActivityIndicator
             size="large"
-            color={status ? '#ffffff' : '#00ff00'}
+            color={status ? 'gray' : '#00ff00'}
           />
         ) : (
           <ToggleSwitch
