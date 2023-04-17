@@ -25,7 +25,7 @@ export default function Faces() {
             const fetch = async () => {
                 console.log("use effect loop")
                 try {
-                    const { data: { data } } = await axios.get(`${API_URL}:3000/faces/${user.phone}`)
+                    const { data: { data } } = await axios.get(`${API_URL}:3000/face/${user.phone}`)
                     console.log(data)
                     if (data != registeredFaces) {
                         setRegisteredFaces(data)

@@ -37,7 +37,7 @@ export default class ProgressCircle extends Component {
     }
   }
 
-  componentWillReceiveProps({ value }) {
+  componentDidUpdate({ value }) {
     this.handleChange(value)
   }
 

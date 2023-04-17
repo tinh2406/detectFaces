@@ -36,7 +36,7 @@ export default function OpenDoor() {
       </Text>
       {netInfor.isConnected && (
         <FlatList
-          data={user.addressDoor}
+          data={user.devices}
           renderItem={({ item }) => <Item address={item} />}
           keyExtractor={item => item.addressDoor}
           item></FlatList>
@@ -60,11 +60,11 @@ const Item = ({ address }) => {
         // console.log(door,"so sanh",address)
         if (!deepEqual(address, door)) {
           console.log('Sẽ cập nhật lại user do thay đổi trạng thái cửa')
-          const newAddress =await Promise.all(user.addressDoor.map(i => {
+          const newAddress =await Promise.all(user.devices.map(i => {
             if (i.addressDoor === door.addressDoor) return door;
             return i;
           }));
-          setUser({ ...user, addressDoor: newAddress });
+          setUser({ ...user,devices:newAddress });
           setLoading(false)
         }
       };
@@ -92,6 +92,7 @@ const Item = ({ address }) => {
         }
       } catch (error) {
         Alert.alert(`${error}`)
+        setLoading(false)
       }
     } else {
       try {
@@ -106,6 +107,7 @@ const Item = ({ address }) => {
         }
       } catch (error) {
         Alert.alert(`${error}`)
+        setLoading(false)
       }
     }
   };
@@ -133,7 +135,7 @@ const Item = ({ address }) => {
   };
   const updateName = async name => {
     console.log(owner);
-    if (owner) {
+    if (owner==true) {
       await firestore()
         .collection('devices')
         .doc(addressDoor)

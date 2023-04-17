@@ -20,7 +20,7 @@ import deepEqual from 'deep-equal';
 import FormatDate from '../utils/formatDate';
 import {FormatNotify} from '../utils/updateNotify';
 export default function Notifys({navigation}) {
-  const {user, addressDoorRef} = useContext(AuthContext);
+  const {user, devicesRef} = useContext(AuthContext);
   const [notifys, setNotifys] = useState();
   const [numOfCurrent, setNumOfCurrent] = useState(10);
   const [loadMoreLoading, setLoadMoreLoading] = useState(false);
@@ -46,10 +46,10 @@ export default function Notifys({navigation}) {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (addressDoorRef) {
+      if (devicesRef) {
         const notifysRef = firestore()
           .collection('notifys')
-          .where('device', 'in', addressDoorRef)
+          .where('device', 'in', devicesRef)
           .orderBy('createAt', 'desc')
           .limit(numOfCurrent);
         const unsubscribe = notifysRef.onSnapshot(async snapshot => {
@@ -57,7 +57,7 @@ export default function Notifys({navigation}) {
             (
               await firestore()
                 .collection('notifys')
-                .where('device', 'in', addressDoorRef)
+                .where('device', 'in', devicesRef)
                 .get()
             ).size > numOfCurrent,
           );
@@ -83,7 +83,7 @@ export default function Notifys({navigation}) {
           unsubscribe();
         };
       }
-    }, [netInfor, notifys, numOfCurrent, addressDoorRef]),
+    }, [netInfor, notifys, numOfCurrent, devicesRef]),
   );
   return (
     <SafeAreaView style={{backgroundColor: 'dodgerblue', flex: 1}}>

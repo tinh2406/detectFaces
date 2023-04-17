@@ -1,5 +1,5 @@
-import {API_URL} from '@env';
-import {useState, useContext} from 'react';
+import { API_URL } from '@env';
+import { useState, useContext } from 'react';
 import {
   Button,
   SafeAreaView,
@@ -8,11 +8,13 @@ import {
   ToastAndroid,
   Image,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
-import {AuthContext} from '../contexts/authContext';
+import { AuthContext } from '../contexts/authContext';
 import axios from 'axios';
+import { GetUserFirebase, UpdatePasswordFirebase } from '../utils/firebaseHelper';
 export default function Login() {
   const context = useContext(AuthContext);
 
@@ -24,30 +26,28 @@ export default function Login() {
   const [isWrongPassword, setIsWrongPassword] = useState(false);
   const [openNewPassword, setOpenNewPassword] = useState(false);
   const [resendVerifyCode, setResendVerifyCode] = useState(false);
+  const [loadingLogin, setLoadingLogin] = useState(false);
   const handleLogin = async () => {
+    setLoadingLogin(true)
     const res = await firestore().collection('users').doc(phone).get();
+    console.log(res, "login click")
     if (!res.exists) {
       ToastAndroid.show('Wrong phone number', ToastAndroid.SHORT);
+      setLoadingLogin(false)
       return;
     }
-    const user = res.data();
-    const address = [];
-    await Promise.all(
-      user.addressDoor.map(async device => {
-        const res = await device.get();
-        if (res.exists) {
-          address.push(res.data());
-        }
-      }),
-    );
-    user.addressDoor = address;
+    const user = await GetUserFirebase(res);
+    console.log(user)
     if (password === user.password) {
-      await AsyncStorage.setItem('user', JSON.stringify({...user, phone}));
-      context.setUser({...user, phone});
+      await AsyncStorage.setItem('user', JSON.stringify({ ...user, phone }));
+      context.setUser({ ...user, phone });
+      context.setDeviceUserRef(res.data().devices)
+      setLoadingLogin(false)
       return;
     }
     setIsWrongPassword(true);
     ToastAndroid.show('Wrong password', ToastAndroid.SHORT);
+    setLoadingLogin(false)
     return;
   };
   const handleUpdatePassword = async () => {
@@ -71,12 +71,7 @@ export default function Login() {
       return;
     }
 
-    res = await firestore().collection('users').doc(phone).get();
-    if (!res.exists) return;
-    user = res.data();
-    user.password = newPassword;
-
-    await firestore().collection('users').doc(phone).set(user);
+    await UpdatePasswordFirebase(phone, newPassword)
 
     setOpenNewPassword(false);
     setResendVerifyCode(false);
@@ -225,28 +220,36 @@ export default function Login() {
       )}
       {isWrongPassword && (
         <Text
-          style={{fontSize: 16, color: 'blue', fontWeight: 'bold'}}
+          style={{ fontSize: 16, color: 'blue', fontWeight: 'bold' }}
           onPress={handleSendVerifyCode}>
           Forget password ?
         </Text>
       )}
       {resendVerifyCode && (
         <Text
-          style={{fontSize: 16, color: 'blue', fontWeight: 'bold'}}
+          style={{ fontSize: 16, color: 'blue', fontWeight: 'bold' }}
           onPress={handleResendVerifyCode}>
           Resend verify code
         </Text>
       )}
-      {!openNewPassword ? (
-        <View style={{width: '80%', padding: 15}}>
+      
+      {!openNewPassword ? 
+        <>
+        {loadingLogin ? (
+          <ActivityIndicator size="large" color={'#ffffff'} />
+        ) : (
+          <View style={{ width: '80%', padding: 15 }}>
           <Button
             title="Login"
             color={phone && password ? 'blue' : 'gray'}
             onPress={handleLogin}
+            disabled={loadingLogin}
           />
         </View>
-      ) : (
-        <View style={{width: '80%', padding: 15}}>
+        )}
+        </>
+       : (
+        <View style={{ width: '80%', padding: 15 }}>
           <Button
             title="Set password"
             color={

@@ -2,7 +2,7 @@ import { API_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
 import { useContext, useState } from 'react';
-import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, StyleSheet, Text, ToastAndroid, View } from "react-native";
 import { RNCamera } from "react-native-camera";
 import { AuthContext } from "../contexts/authContext";
 import ProgressCircle from "../lib/ProgressCircle";
@@ -40,6 +40,7 @@ export default function GetFace({ navigation, route }) {
       while (true) {
         if (res.data.message === "success") {
           navigation.navigate("HomeTabs", { screen: "AddFace", message: "add face successfully" })
+          ToastAndroid.show("Thêm khuôn mặt thành công", ToastAndroid.SHORT)
           setTakePicture(true)
           setMessage(undefined)
           return true
@@ -66,6 +67,11 @@ export default function GetFace({ navigation, route }) {
       console.log(error)
     }
   };
+  if (error) {
+    navigation.navigate("HomeTabs", { screen: "AddFace", message: "add face successfully" })
+    ToastAndroid.show(`${error}`, ToastAndroid.SHORT)
+
+  }
   return (
     <View style={styles.container}>
       <RNCamera
@@ -89,10 +95,10 @@ export default function GetFace({ navigation, route }) {
           animationConfig={{ speed: 4 }}
         ></ProgressCircle>
       </View>
-      <View style={{width:'100%',position: "absolute",top:h/2,alignItems:"center"}}>
-      {/* <Text style={styles.text}>{5 - count}</Text> */}
-      {message && <Text style={styles.text}>{message}</Text>}
-      {error && <Text style={styles.text}>{error}</Text>}
+      <View style={{ width: '100%', position: "absolute", top: h / 2, alignItems: "center" }}>
+        {/* <Text style={styles.text}>{5 - count}</Text> */}
+        {message && <Text style={styles.text}>{message}</Text>}
+        {error && <Text style={styles.text}>{error}</Text>}
       </View>
     </View>
   );
@@ -108,7 +114,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 30,
-    color: "green", 
+    color: "green",
   }
 });
 

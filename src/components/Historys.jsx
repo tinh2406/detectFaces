@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import deepEqual from 'deep-equal';
 
 export default function Historys() {
-  const {addressDoorRef} = useContext(AuthContext);
+  const {devicesRef} = useContext(AuthContext);
   const [historys, setHistorys] = useState();
   const [numOfCurrent, setNumOfCurrent] = useState(10);
   const [has, setHas] = useState(false);
@@ -39,10 +39,11 @@ export default function Historys() {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (addressDoorRef) {
+      console.log(devicesRef)
+      if (devicesRef) {
         const historysRef = firestore()
           .collection('historys')
-          .where('device', 'in', addressDoorRef)
+          .where('device', 'in', devicesRef)
           .orderBy('createAt', 'desc')
           .limit(numOfCurrent);
         const unsubscribe = historysRef.onSnapshot(async snapshot => {
@@ -51,7 +52,7 @@ export default function Historys() {
             (
               await firestore()
                 .collection('historys')
-                .where('device', 'in', addressDoorRef)
+                .where('device', 'in', devicesRef)
                 .get()
             ).size > numOfCurrent,
           );
@@ -85,7 +86,7 @@ export default function Historys() {
           unsubscribe();
         };
       }
-    }, [netInfor, historys, numOfCurrent, addressDoorRef]),
+    }, [netInfor, historys, numOfCurrent, devicesRef]),
   );
   return (
     <SafeAreaView style={{backgroundColor: 'dodgerblue', flex: 1}}>

@@ -16,8 +16,10 @@ export async function FormatNotify(doc) {
 
 export default async function UpdateNotifyBackground() {
     const { phone } = JSON.parse(await AsyncStorage.getItem('user'))
-    const { addressDoor } = (await firestore().collection('users').doc(phone).get()).data()
-    const notifyDocs = await firestore().collection('notifys').where('device', 'in', addressDoor).orderBy("createAt", 'desc').limit(10).get();
+    console.log("Cập nhật thông báo ngầm")
+    const { devices } = (await firestore().collection('users').doc(phone).get()).data()
+    const devices_ = (await devices.get()).data().devices
+    const notifyDocs = await firestore().collection('notifys').where('device', 'in', devices_).orderBy("createAt", 'desc').limit(10).get();
     const notis = [];
     await Promise.all(notifyDocs.docs.map(async (doc) => {
         if (doc.exists) {

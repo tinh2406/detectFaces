@@ -12,13 +12,14 @@ import DownloadImage from "../utils/downloadImage";
 import { uploadImage } from "../utils/firebaseHelper";
 
 export default function User() {
-    const { user, setUser } = useContext(AuthContext)
+    const { user, setUser,setDevicesRef } = useContext(AuthContext)
     const [image, setImage] = useState(null);
     const [updatePassword, setUpdatePassword] = useState(false)
     const [addUser, setAddUser] = useState(false)
     const handleLogout = async () => {
         await AsyncStorage.clear()
         setUser()
+        setDevicesRef()
         await messaging().registerDeviceForRemoteMessages();
         const token = await messaging().getToken();
         await firestore().collection('tokens').doc(user.phone).update({

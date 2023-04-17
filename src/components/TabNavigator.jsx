@@ -1,20 +1,16 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useNetInfo} from '@react-native-community/netinfo';
-import firestore from '@react-native-firebase/firestore';
 import messaging from '@react-native-firebase/messaging';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {useFocusEffect} from '@react-navigation/native';
-import deepEqual from 'deep-equal';
-import React, {useContext, useEffect, useState} from 'react';
-import {SafeAreaView, Text} from 'react-native';
-import {AuthContext} from '../contexts/authContext';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useContext } from 'react';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { AuthContext } from '../contexts/authContext';
 import AddFace from '../screens/AddFace';
 import Home from '../screens/Home';
 import Login from '../screens/Login';
 import Notifys from '../screens/Notifys';
 import OpenDoor from '../screens/OpenDoor';
 import User from '../screens/User';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { AddDeviceTokenToFirebase } from '../utils/firebaseHelper';
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator({route}) {
@@ -28,25 +24,8 @@ export default function TabNavigator({route}) {
         if (user) {
           await messaging().registerDeviceForRemoteMessages();
           const token = await messaging().getToken();
-          try {
-            await firestore()
-              .collection('tokens')
-              .doc(user.phone)
-              .update({
-                devices: firestore.FieldValue.arrayUnion(token),
-              });
-          } catch (error) {
-            await firestore()
-              .collection('tokens')
-              .doc(user.phone)
-              .set(
-                {
-                  devices: [token],
-                },
-                {merge: true},
-              );
-          }
-          console.log(token);
+          const result = await AddDeviceTokenToFirebase(user.phone,token)
+          console.log(result);
         }
       };
       unsub();
