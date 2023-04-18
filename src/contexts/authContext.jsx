@@ -5,6 +5,7 @@ import deepEqual from 'deep-equal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Spinner from 'react-native-loading-spinner-overlay/lib';
 import { GetUserFirebase } from '../utils/firebaseHelper';
+import logout from '../utils/logout';
 export const AuthContext = createContext();
 
 export default function AuthContextProvider({ children }) {
@@ -14,6 +15,32 @@ export default function AuthContextProvider({ children }) {
   const [deviceUserRef, setDeviceUserRef] = useState();
   const [devicesId, setDevicesId] = useState({});
   const netInfor = useNetInfo();
+  useEffect(
+    React.useCallback(() => {
+      if (user && netInfor.isConnected) {
+        const userRef = firestore().collection('users').doc(user.phone);
+        const unsubscribe = userRef.onSnapshot(async doc => {
+          const getUser = await GetUserFirebase(doc)
+          if(!doc.data()) {
+            logout(user,setUser,setDevicesRef)
+            return
+          }
+          if(!deviceUserRef){
+            setDeviceUserRef(doc.data().devices)
+          }
+          if (!deepEqual(getUser, user)) {
+            console.log('set lai user o day');
+            await AsyncStorage.setItem('user', JSON.stringify(getUser));
+            setUser(getUser);
+            setDeviceUserRef(doc.data().devices)
+          }
+        });
+
+        return () => unsubscribe();
+      }
+    }, [user, netInfor,devicesRef]),
+    [user, netInfor,devicesRef],
+  );
   useEffect(
     React.useCallback(() => {
       const getRegisteredUser = async () => {
@@ -42,7 +69,7 @@ export default function AuthContextProvider({ children }) {
             })
           );
           console.log(newDevicesId,"deviceId")
-          if (!deepEqual(newDevicesId, devicesId)) {
+          if (!devicesRef||!deepEqual(newDevicesId, devicesId)) {
             console.log('set lai deviceRef o day');
             setDevicesId(newDevicesId)
             setDevicesRef(_devicesRef);
@@ -54,25 +81,7 @@ export default function AuthContextProvider({ children }) {
     }, [user, netInfor,devicesId,deviceUserRef]),
     [user, netInfor,devicesId,deviceUserRef],
   );
-  useEffect(
-    React.useCallback(() => {
-      if (user && netInfor.isConnected) {
-        const userRef = firestore().collection('users').doc(user.phone);
-        const unsubscribe = userRef.onSnapshot(async doc => {
-          const getUser = await GetUserFirebase(doc)
-          if (!deepEqual(getUser, user)) {
-            console.log('set lai user o day');
-            await AsyncStorage.setItem('user', JSON.stringify(getUser));
-            setUser(getUser);
-            setDeviceUserRef(doc.data().devices)
-          }
-        });
-
-        return () => unsubscribe();
-      }
-    }, [user, netInfor,devicesRef]),
-    [user, netInfor,devicesRef],
-  );
+  
   const authContextData = { user, setUser, devicesRef,setDevicesRef,setDeviceUserRef };
   return (
     <AuthContext.Provider value={authContextData}>

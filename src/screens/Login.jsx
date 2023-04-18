@@ -27,6 +27,7 @@ export default function Login() {
   const [openNewPassword, setOpenNewPassword] = useState(false);
   const [resendVerifyCode, setResendVerifyCode] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
+  const [resendVerifyCodeLoading,setResendVerifyCodeLoading]=useState(false)
   const handleLogin = async () => {
     setLoadingLogin(true)
     const res = await firestore().collection('users').doc(phone).get();
@@ -51,28 +52,33 @@ export default function Login() {
     return;
   };
   const handleUpdatePassword = async () => {
+    setLoadingLogin(true)
     if (
       phone.length != 10 ||
       newPassword != confirmNewpassword ||
       newPassword == '' ||
       verify == ''
-    )
+    ){
+      setLoadingLogin(false) 
       return;
+    }
     const resRef = firestore().collection('verifys');
     var docs = (await resRef.where('code', '==', Number.parseInt(verify)).get())
       .docs;
     var res = docs.find(doc => doc.id === phone);
     if (!res) {
       ToastAndroid.show('Verify code incorrect', ToastAndroid.SHORT);
+      setLoadingLogin(false) 
       return;
     }
     if (res.data().expireAt.toDate() < new Date()) {
       ToastAndroid.show('Request is expire', ToastAndroid.SHORT);
+      setLoadingLogin(false) 
       return;
     }
 
     await UpdatePasswordFirebase(phone, newPassword)
-
+    setLoadingLogin(false) 
     setOpenNewPassword(false);
     setResendVerifyCode(false);
     setNewPassword('');
@@ -83,32 +89,28 @@ export default function Login() {
     setIsWrongPassword(false);
     setOpenNewPassword(true);
     setResendVerifyCode(true);
-    while (true) {
-      try {
-        const res = await axios.post(`${API_URL}:3000/users/resendVerifyCode`, {
-          phone,
-        });
-        console.log(res);
-        break;
-      } catch (error) {
-        console.log(error);
-        continue;
-      }
-    }
+    setResendVerifyCodeLoading(true);
+    axios.post(`${API_URL}:3000/users/resendVerifyCode`, {
+      phone,
+    }).then(res=>{
+      console.log(res.data,"SendVerifyCode")
+    setResendVerifyCodeLoading(false);
+    }).catch(error=>{
+    console.log(error)
+    setResendVerifyCodeLoading(false);
+    })
   };
   const handleResendVerifyCode = async () => {
-    while (true) {
-      try {
-        const res = await axios.post(`${API_URL}:3000/users/resendVerifyCode`, {
-          phone,
-        });
-        console.log(res);
-        break;
-      } catch (error) {
-        console.log(error);
-        continue;
-      }
-    }
+    setResendVerifyCodeLoading(true);
+    axios.post(`${API_URL}:3000/users/resendVerifyCode`, {
+      phone,
+    }).then(res=>{
+      console.log(res.data,"ResendVerifyCode")
+    setResendVerifyCodeLoading(false);
+    }).catch(error=>{
+      console.log(error)
+    setResendVerifyCodeLoading(false);
+    })
   };
   return (
     <SafeAreaView
@@ -226,11 +228,15 @@ export default function Login() {
         </Text>
       )}
       {resendVerifyCode && (
+      <>{
+        resendVerifyCodeLoading ? 
+        <ActivityIndicator size="large" color={'blue'} />:
         <Text
           style={{ fontSize: 16, color: 'blue', fontWeight: 'bold' }}
           onPress={handleResendVerifyCode}>
           Resend verify code
-        </Text>
+        </Text>}
+      </>
       )}
       
       {!openNewPassword ? 
@@ -248,7 +254,10 @@ export default function Login() {
         </View>
         )}
         </>
-       : (
+       : <>
+       {loadingLogin ? (
+         <ActivityIndicator size="large" color={'#ffffff'} />
+       ) : (
         <View style={{ width: '80%', padding: 15 }}>
           <Button
             title="Set password"
@@ -267,6 +276,7 @@ export default function Login() {
           />
         </View>
       )}
+       </>}
     </SafeAreaView>
   );
 }

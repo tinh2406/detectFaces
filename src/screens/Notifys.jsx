@@ -99,15 +99,16 @@ export default function Notifys({navigation}) {
         Notify
       </Text>
       {netInfor.isConnected && (
-        <FlatList
+        <>
+        {notifys?<FlatList
           data={notifys}
           renderItem={({item}) => (
             <Item notify={item} navigation={navigation} />
           )}
           keyExtractor={item => item.id}
-          item></FlatList>
+          item></FlatList>:<ActivityIndicator size="large" color={'#ffffff'}/>}</>
       )}
-      {has && (
+      {has && notifys && (
         <View>
           {loadMoreLoading ? (
             <ActivityIndicator size="large" color={'#ffffff'} />

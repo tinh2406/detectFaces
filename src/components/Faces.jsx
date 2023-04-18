@@ -24,17 +24,17 @@ export default function Faces() {
         React.useCallback(() => {
             const fetch = async () => {
                 console.log("use effect loop")
-                try {
-                    const { data: { data } } = await axios.get(`${API_URL}:3000/face/${user.phone}`)
+                axios.get(`${API_URL}:3000/face/${user.phone}`).then(async response=>{
+                    const data = response.data.data
                     console.log(data)
                     if (data != registeredFaces) {
                         setRegisteredFaces(data)
                         await AsyncStorage.setItem('faces', JSON.stringify(data))
                     }
-                } catch (error) {
-                    console.log(error.message)
+                }).catch(error=>{
                     setNetwork(error)
-                }
+
+                })
             }
             const intervalId = setInterval(() => {
                 fetch();
@@ -58,12 +58,11 @@ export default function Faces() {
 
 const Item = ({ face: { name, id } }) => {
     const handleDelete = async () => {
-        try {
-            const res = await axios.delete(`${API_URL}:3000/faces/${id}`)
+        axios.delete(`${API_URL}:3000/faces/${id}`).then(response=>{
             console.log(res)
-        } catch (error) {
+        }).catch(error=>{
             console.log(error.message)
-        }
+        })
     }
     const handleLongPress = async () => {
         Alert.alert('Bạn có chắc xóa không', name, [

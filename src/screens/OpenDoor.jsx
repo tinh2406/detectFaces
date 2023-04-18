@@ -50,7 +50,6 @@ const Item = ({ address }) => {
   const { user, setUser } = useContext(AuthContext);
   const { phone, owner } = user;
   const [loading, setLoading] = useState(false);
-  const [resToggle, setResToggle] = useState();
   useFocusEffect(
     React.useCallback(() => {
       const fetch = async () => {
@@ -60,11 +59,11 @@ const Item = ({ address }) => {
         // console.log(door,"so sanh",address)
         if (!deepEqual(address, door)) {
           console.log('Sẽ cập nhật lại user do thay đổi trạng thái cửa')
-          const newAddress =await Promise.all(user.devices.map(i => {
+          const newAddress = await Promise.all(user.devices.map(i => {
             if (i.addressDoor === door.addressDoor) return door;
             return i;
           }));
-          setUser({ ...user,devices:newAddress });
+          setUser({ ...user, devices: newAddress });
           setLoading(false)
         }
       };
@@ -80,35 +79,31 @@ const Item = ({ address }) => {
   const handleTogglePress = async () => {
     setLoading(true);
     if (status) {
-      try {
-        const res = await axios.post(`${API_URL}:3000/lockDoor`, {
-          phone,
-          addressDoor,
+      axios.post(`${API_URL}:3000/lockDoor`, {
+        phone,
+        addressDoor,
+      }).then(response => {
+        console.log(response.data, 'Lock res');
+
+      })
+        .catch(error => {
+          Alert.alert(`${error}`)
+          setLoading(false)
+
         });
-        console.log(res.data, "res data")
-        console.log(status);
-        if (res.data.message === 'Locked') {
-          setResToggle(false);
-        }
-      } catch (error) {
-        Alert.alert(`${error}`)
-        setLoading(false)
-      }
     } else {
-      try {
-        const res = await axios.post(`${API_URL}:3000/unlockDoor`, {
-          phone,
-          addressDoor,
+      axios.post(`${API_URL}:3000/unlockDoor`, {
+        phone,
+        addressDoor,
+      }).then(response => {
+        console.log(response.data, 'Unlock res');
+
+      })
+        .catch(error => {
+          Alert.alert(`${error}`)
+          setLoading(false)
+
         });
-        console.log(res.data);
-        console.log(status);
-        if (res.data.message === 'Unlocked') {
-          setResToggle(true);
-        }
-      } catch (error) {
-        Alert.alert(`${error}`)
-        setLoading(false)
-      }
     }
   };
   const handleLongPress = () => {
@@ -135,11 +130,16 @@ const Item = ({ address }) => {
   };
   const updateName = async name => {
     console.log(owner);
-    if (owner==true) {
+    if (owner == true) {
       await firestore()
         .collection('devices')
         .doc(addressDoor)
         .set({ name }, { merge: true });
+      const newAddress = await Promise.all(user.devices.map(i => {
+        if (i.addressDoor === address.addressDoor) return {...address,name};
+        return i;
+      }));
+      setUser({ ...user, devices: newAddress });
     }
   };
   return (

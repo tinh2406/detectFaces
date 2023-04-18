@@ -57,26 +57,30 @@ export const AddDeviceTokenToFirebase = async (phone, token) => {
 
 
 export const GetUserFirebase = async (doc) => {
-    const data = await doc.data();
-    const devices = await (await data.devices.get()).data().devices;
-    const addressDoor = [];
-    await Promise.all(
-        devices.map(async device => {
-            const res = await device.get();
-            //     console.log(doc.data())
-            //     console.log("luồng device chạy")
-            if (res.exists) {
-                addressDoor.push(res.data());
-            }
-        }),
-    );
-    console.log("get user firebase",{...data,devices:addressDoor, phone: doc.id})
-    return {...data,devices:addressDoor, phone: doc.id}
+    try {
+        const data = await doc.data();
+        const devices = await (await data.devices.get()).data().devices;
+        const addressDoor = [];
+        await Promise.all(
+            devices.map(async device => {
+                const res = await device.get();
+                //     console.log(doc.data())
+                //     console.log("luồng device chạy")
+                if (res.exists) {
+                    addressDoor.push(res.data());
+                }
+            }),
+        );
+        console.log("get user firebase", { ...data, devices: addressDoor, phone: doc.id })
+        return { ...data, devices: addressDoor, phone: doc.id }
+    } catch (error) {
+        return null
+    }
 }
 
 
 
-export const UpdatePasswordFirebase = async (phone,newPassword)=>{
+export const UpdatePasswordFirebase = async (phone, newPassword) => {
     const res = await firestore().collection('users').doc(phone).get();
     if (!res.exists) return;
     user = res.data();
