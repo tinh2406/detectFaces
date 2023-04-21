@@ -8,8 +8,10 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
+import java.util.Arrays;
 import java.util.List;
-
+import com.facebook.react.shell.MainReactPackage;
+import com.rusel.RCTBluetoothSerial.*;
 public class MainApplication extends Application implements ReactApplication {
 
   private final ReactNativeHost mReactNativeHost =
@@ -58,5 +60,11 @@ public class MainApplication extends Application implements ReactApplication {
       DefaultNewArchitectureEntryPoint.load();
     }
     ReactNativeFlipper.initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+  }
+  protected List<ReactPackage> getPackages() {
+      return Arrays.asList(
+          new RCTBluetoothSerialPackage(),
+          new MainReactPackage()
+      );
   }
 }
