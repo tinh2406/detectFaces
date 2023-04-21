@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 import BluetoothSerial from 'react-native-bluetooth-serial';
 import DoorItem from '../components/DoorItem';
-import { AuthContext } from '../contexts/authContext';
+import {AuthContext} from '../contexts/authContext';
 import DoorItemBluetooth from '../components/DoorItemBluetooth';
 export default function OpenDoor() {
-  const { user } = useContext(AuthContext);
+  const {user} = useContext(AuthContext);
   const netInfor = useNetInfo();
   const [netLoading, setNetLoading] = useState(true)
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function OpenDoor() {
     unsub()
   }, [netInfor, netLoading]));
   return (
-    <SafeAreaView style={{ backgroundColor: 'dodgerblue', flex: 1 }}>
+    <SafeAreaView style={{backgroundColor: 'dodgerblue', flex: 1}}>
       <Text
         style={{
           textAlign: 'center',
@@ -53,7 +53,7 @@ export default function OpenDoor() {
       {netInfor.isConnected && (
         <FlatList
           data={user.devices}
-          renderItem={({ item }) => <DoorItem address={item} />}
+          renderItem={({item}) => <DoorItem address={item} />}
           keyExtractor={item => item.addressDoor}
           item></FlatList>
       )}

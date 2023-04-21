@@ -61,38 +61,44 @@ export default function Faces() {
     )
 }
 
-const Item = ({ face: { name, id } }) => {
-    const handleDelete = async () => {
-        axios.delete(`${API_URL}:3000/faces/${id}`).then(response=>{
-            console.log(res)
-        }).catch(error=>{
-            console.log(error.message)
-        })
-    }
-    const handleLongPress = async () => {
-        Alert.alert('Bạn có chắc xóa không', name, [
-            {
-                text: 'Cancel',
-                onPress: () => { },
-                style: 'cancel',
-            },
-            { text: 'OK', onPress: () => { handleDelete() } },
-        ]);
-    }
-    return (
-        <TouchableOpacity onLongPress={handleLongPress}>
-            <View
-                style={{
-                    backgroundColor: 'white',
-                    color: 'black',
-                    // borderRadius: 10,
-                    margin: 2,
-                    padding: 8,
-                }}
-            >
-                <Text style={{color: 'black', fontSize: 16}}>{name}</Text>
-            </View>
-        </TouchableOpacity>
-
-    )
-}
+const Item = ({face: {name, id}}) => {
+  const handleDelete = async () => {
+    axios
+      .delete(`${API_URL}:3000/faces/${id}`)
+      .then(response => {
+        console.log(res);
+      })
+      .catch(error => {
+        console.log(error.message);
+      });
+  };
+  const handleLongPress = async () => {
+    Alert.alert('Bạn có chắc xóa không', name, [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'OK',
+        onPress: () => {
+          handleDelete();
+        },
+      },
+    ]);
+  };
+  return (
+    <TouchableOpacity onLongPress={handleLongPress}>
+      <View
+        style={{
+          backgroundColor: 'white',
+          color: 'black',
+          // borderRadius: 10,
+          margin: 2,
+          padding: 8,
+        }}>
+        <Text style={{color: 'black', fontSize: 16}}>{name}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
