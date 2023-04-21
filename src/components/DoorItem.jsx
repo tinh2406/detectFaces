@@ -51,6 +51,7 @@ export default ({ address }) => {
   
     const handleTogglePress = async () => {
       setLoading(true);
+      console.log(`${API_URL}:3000/lockDoor`)
       if (status) {
         axios.post(`${API_URL}:3000/lockDoor`, {
           phone,

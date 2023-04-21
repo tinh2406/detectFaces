@@ -46,7 +46,7 @@ export default function Notifys({navigation}) {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (devicesRef) {
+      if (devicesRef && netInfor.isConnected) {
         const notifysRef = firestore()
           .collection('notifys')
           .where('device', 'in', devicesRef)
@@ -98,16 +98,14 @@ export default function Notifys({navigation}) {
         }}>
         Notify
       </Text>
-      {netInfor.isConnected && (
-        <>
-        {notifys?<FlatList
+      {notifys?<FlatList
           data={notifys}
           renderItem={({item}) => (
             <Item notify={item} navigation={navigation} />
           )}
           keyExtractor={item => item.id}
-          item></FlatList>:<ActivityIndicator size="large" color={'#ffffff'}/>}</>
-      )}
+          item></FlatList>:<ActivityIndicator size="large" color={'#ffffff'}/>}
+      
       {has && notifys && (
         <View>
           {loadMoreLoading ? (
