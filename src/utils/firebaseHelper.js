@@ -15,7 +15,10 @@ export const uploadImage = async (phone, image) => {
     const response = await fetch(image);
     const blob = await response.blob();
     const fileName = phone;
-    await reference.child(fileName).delete()
+    try {
+        await reference.child(fileName).delete()
+    } catch (error) {
+    }
     const uploadTask = reference.child(fileName).put(blob);
     uploadTask.on('state_changed', (taskSnapshot) => {
         console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);

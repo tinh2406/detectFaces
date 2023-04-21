@@ -4,11 +4,14 @@ import { useFocusEffect } from "@react-navigation/native"
 import axios from "axios"
 import React, { useContext, useState } from "react"
 import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native"
+import { useNetInfo } from '@react-native-community/netinfo';
 import { AuthContext } from "../contexts/authContext"
 export default function Faces() {
     const [registeredFaces, setRegisteredFaces] = useState()
     const { user } = useContext(AuthContext)
     const [network, setNetwork] = useState()
+    const netInfor = useNetInfo();
+    
     useFocusEffect(
         React.useCallback(() => {
             const getFacesLocal = async () => {
@@ -22,6 +25,7 @@ export default function Faces() {
     )
     useFocusEffect(
         React.useCallback(() => {
+            if(netInfor.isConnected){
             const fetch = async () => {
                 console.log("use effect loop")
                 axios.get(`${API_URL}:3000/face/${user.phone}`).then(async response=>{
@@ -40,7 +44,8 @@ export default function Faces() {
                 fetch();
             }, 1000)
             return () => { clearInterval(intervalId) }
-        }, [registeredFaces, network])
+        }
+        }, [registeredFaces, network,netInfor])
     )
     return (
         <View>
