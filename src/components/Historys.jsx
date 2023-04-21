@@ -39,7 +39,7 @@ export default function Historys() {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log(devicesRef)
+      console.log(devicesRef);
       if (devicesRef) {
         const historysRef = firestore()
           .collection('historys')
@@ -73,7 +73,10 @@ export default function Historys() {
             }),
           );
 
-          if (historys?.length!=historys?.length || !deepEqual(historys, hists)) {
+          if (
+            historys?.length != historys?.length ||
+            !deepEqual(historys, hists)
+          ) {
             setHistorys(hists);
             setLoadMoreLoading(false);
             if (numOfCurrent == 10) {
@@ -101,16 +104,19 @@ export default function Historys() {
         }}>
         History
       </Text>
-      {netInfor.isConnected && <>
-        {
-          historys?
-        <FlatList
-          data={historys}
-          renderItem={({item}) => <Item notify={item} />}
-          keyExtractor={item => item.id}
-          item></FlatList>:
-          <ActivityIndicator size="large" color={'#ffffff'} />
-        }</>}
+      {netInfor.isConnected && (
+        <>
+          {historys ? (
+            <FlatList
+              data={historys}
+              renderItem={({item}) => <Item notify={item} />}
+              keyExtractor={item => item.id}
+              item></FlatList>
+          ) : (
+            <ActivityIndicator size="large" color={'#ffffff'} />
+          )}
+        </>
+      )}
       {has && historys && (
         <View>
           {loadMoreLoading ? (
