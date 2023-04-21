@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import {AuthContext} from '../contexts/authContext';
 
-export default function AddUser({setAddUser}) {
+export default function AddUser({setAddUser, setUserListPanel}) {
   // console.log(API_URL)
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
@@ -43,6 +43,8 @@ export default function AddUser({setAddUser}) {
           if (res.data.message === 'Add account successfully') {
             ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
             setAddUser(false);
+            setUserListPanel(false);
+            setUserListPanel(true);
           }
           console.log(res.data);
           setLoading(false);
@@ -65,6 +67,8 @@ export default function AddUser({setAddUser}) {
           if (res.data.message === 'Add account successfully') {
             ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
             setAddUser(false);
+            setUserListPanel(false);
+            setUserListPanel(true);
           } else {
             setLoading(false);
             return;
@@ -141,5 +145,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     fontSize: 16,
+    color: 'black',
   },
 });

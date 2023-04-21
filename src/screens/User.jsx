@@ -186,7 +186,12 @@ export default function User() {
               <Text style={{fontSize: 18, color: 'white'}}>Add user</Text>
             </View>
           </TouchableOpacity>
-          {addUser && <AddUser setAddUser={setAddUser} />}
+          {addUser && (
+            <AddUser
+              setAddUser={setAddUser}
+              setUserListPanel={setUserListPanel}
+            />
+          )}
 
           <View
             style={{
