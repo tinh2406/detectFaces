@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import {AuthContext} from '../contexts/authContext';
-export default function UpdatePassword({setUpdatePassword}) {
+export default function UpdatePassword({setUpdatePassword,focus}) {
   // console.log(API_URL)
   const {user} = useContext(AuthContext);
   const [oldPassword, setOldPassword] = useState('');
@@ -47,6 +47,7 @@ export default function UpdatePassword({setUpdatePassword}) {
         onChangeText={text => setOldPassword(text)}
         placeholder="Old password"
         placeholderTextColor="gray"
+        onFocus={()=>{focus();focus()}}
       />
       <TextInput
         style={styles.textInput}
@@ -54,6 +55,7 @@ export default function UpdatePassword({setUpdatePassword}) {
         onChangeText={text => setNewPassword(text)}
         placeholder="New password"
         placeholderTextColor="gray"
+        onFocus={()=>{focus()}}
       />
       <TextInput
         style={styles.textInput}
@@ -61,6 +63,7 @@ export default function UpdatePassword({setUpdatePassword}) {
         onChangeText={text => setReNewPassword(text)}
         placeholder="Confirm new password"
         placeholderTextColor="gray"
+        onFocus={()=>{focus()}}
       />
       {newPassword !== reNewPassword && reNewPassword && (
         <Text style={{fontSize: 12, color: 'red'}}>

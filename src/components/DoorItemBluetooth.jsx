@@ -14,11 +14,12 @@ import ToggleSwitch from 'toggle-switch-react-native';
 import deepEqual from "deep-equal"
 import { useFocusEffect } from '@react-navigation/native';
 import { AuthContext } from '../contexts/authContext';
+import AlertCustom from './AlertCustom';
 
 
 
 export default ({ address }) => {
-    const {user} = useContext(AuthContext)
+    const { user } = useContext(AuthContext)
     const { addressBluetooth, name } = address;
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(false);
@@ -28,53 +29,53 @@ export default ({ address }) => {
     const [isModalVisible, setModalVisible] = useState(false);
     const [wifiName, setWifiName] = useState('');
     const [password, setPassword] = useState('');
-    const [newRes,setNewRes] = useState();
+    const [newRes, setNewRes] = useState();
     useFocusEffect(
         React.useCallback(() => {
-        if (addressBluetooth !== "thieu") {
-            console.log("res connect")
-            BluetoothSerial.connect(addressBluetooth)
-                .then(res => {
-                    console.log(res, "Connected")
-                    setIsConnected(true)
-                    const id = setInterval(() => {
-                        //   // Hành động cần thực hiện sau mỗi khoảng thời gian
-                        BluetoothSerial.readFromDevice().then(res => {
-                            if (res != "") {
-                                const _res = (JSON.parse(String(res)))
-                                console.log(newRes, "Giá trị đọc được")
-                                setStatus(_res.status == 0 ? false : true)
-                                if(!deepEqual(_res,newRes)){
-                                    setNewRes(_res)
+            if (addressBluetooth !== "thieu") {
+                console.log("res connect")
+                BluetoothSerial.connect(addressBluetooth)
+                    .then(res => {
+                        console.log(res, "Connected")
+                        setIsConnected(true)
+                        const id = setInterval(() => {
+                            //   // Hành động cần thực hiện sau mỗi khoảng thời gian
+                            BluetoothSerial.readFromDevice().then(res => {
+                                if (res != "") {
+                                    const _res = (JSON.parse(String(res)))
+                                    console.log(newRes, "Giá trị đọc được")
+                                    setStatus(_res.status == 0 ? false : true)
+                                    if (!deepEqual(_res, newRes)) {
+                                        setNewRes(_res)
+                                    }
+                                    if (wifiName == "" && newRes) {
+                                        setWifiName(newRes.wifiName)
+                                        setPassword(newRes.password)
+                                    }
                                 }
-                                if(wifiName=="" && newRes){
-                                    setWifiName(newRes.wifiName)
-                                    setPassword(newRes.password)
-                                }
-                            }
-                        }).catch(error => {
-                            console.log(error, "Lôi đọc")
-                        })
+                            }).catch(error => {
+                                console.log(error, "Lôi đọc")
+                            })
 
-                    }, 1000);
-                    setIntervalId(id);
-                })
-                .catch(error => {
-                    setIsConnected(false)
-                    console.log(error, "connect fail")
-                })
-        }
-    }, [reConnect,newRes]))
+                        }, 1000);
+                        setIntervalId(id);
+                    })
+                    .catch(error => {
+                        setIsConnected(false)
+                        console.log(error, "connect fail")
+                    })
+            }
+        }, [reConnect, newRes]))
     useFocusEffect(
         React.useCallback(() => {
-        return () => {
-            clearInterval(intervalId);
-        };
-    }, [intervalId, reConnect]))
+            return () => {
+                clearInterval(intervalId);
+            };
+        }, [intervalId, reConnect]))
     const handleTogglePress = async () => {
         setLoading(true);
         if (status) {
-            BluetoothSerial.write(JSON.stringify({phone:user.owner===true?user.phone:user.owner,status:0})).
+            BluetoothSerial.write(JSON.stringify({ phone: user.owner === true ? user.phone : user.owner, status: 0 })).
                 then(response => {
                     console.log(response, 'Lock res');
                     setStatus(false)
@@ -89,7 +90,7 @@ export default ({ address }) => {
 
                 });
         } else {
-            BluetoothSerial.write(JSON.stringify({phone:user.owner===true?user.phone:user.owner,status:1})).
+            BluetoothSerial.write(JSON.stringify({ phone: user.owner === true ? user.phone : user.owner, status: 1 })).
                 then(response => {
                     console.log(response, 'Unlock res');
                     setStatus(true)
@@ -109,13 +110,13 @@ export default ({ address }) => {
         setModalVisible(true)
     };
     const handleOK = () => {
-        BluetoothSerial.write(JSON.stringify({phone:user.owner===true?user.phone:user.owner,wifiName,password}))
-        .then(res=>{
-            console.log("Gui wifi thanh cong",res)
-        })
-        .catch(error=>{
-            console.log("Gui wifi loi",error)
-        })
+        BluetoothSerial.write(JSON.stringify({ phone: user.owner === true ? user.phone : user.owner, wifiName, password }))
+            .then(res => {
+                console.log("Gui wifi thanh cong", res)
+            })
+            .catch(error => {
+                console.log("Gui wifi loi", error)
+            })
         setWifiName("")
         setPassword("")
         setModalVisible(false)
@@ -157,32 +158,27 @@ export default ({ address }) => {
                     )}
                 </View>
             </TouchableOpacity>
-            <Modal isVisible={isModalVisible}>
-                <View style={{ backgroundColor: '#000000', padding: 20 }}>
-                    <Text style={{paddingHorizontal:4,color:"#ffffff"}}>Wifi</Text>
-                    <TextInput
-                        placeholder="Wifi name"
-                        placeholderTextColor={"#342353"}
-                        value={wifiName}
-                        style={{color:"#ffffff"}}
-                        onChangeText={setWifiName}
-                    />
-                    <Text style={{paddingHorizontal:4,color:"#ffffff"}}>Password</Text>
-                    <TextInput
-                        placeholder="Password"
-                        placeholderTextColor={"#342353"}
-                        value={password}
-                        style={{color:"#ffffff"}}
-                        onChangeText={setPassword}
-                    />
-                    <View style={{flexDirection:"row",justifyContent:"flex-end"}}>
-
-                        <Button title="Cancel" color={"transparent"}  onPress={()=>{setModalVisible(false)}} />
-                        <Button title="OK" color={"transparent"}  onPress={handleOK} />
-                        
-                    </View>
-                </View>
-            </Modal>
+            <AlertCustom 
+                isVisible={isModalVisible}
+                OKpress={handleOK}
+                Cancelpress={()=>{setModalVisible(false)}}>
+                <Text style={{ paddingHorizontal: 4, color: "#ffffff" }}>Wifi</Text>
+                <TextInput
+                    placeholder="Wifi name"
+                    placeholderTextColor={"#342353"}
+                    value={wifiName}
+                    style={{ color: "#ffffff" }}
+                    onChangeText={setWifiName}
+                />
+                <Text style={{ paddingHorizontal: 4, color: "#ffffff" }}>Password</Text>
+                <TextInput
+                    placeholder="Password"
+                    placeholderTextColor={"#342353"}
+                    value={password}
+                    style={{ color: "#ffffff" }}
+                    onChangeText={setPassword}
+                />
+            </AlertCustom>
         </>
     );
 };

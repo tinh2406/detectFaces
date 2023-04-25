@@ -34,6 +34,7 @@ export default function GetFace({ navigation, route }) {
   }
   const uploadImage = async (image) => {
     const { phone } = JSON.parse(await AsyncStorage.getItem('user'))
+    console.log(`${API_URL}:3000/api/upload`)
     axios.post(`${API_URL}:3000/api/upload`, { phone, name: route.params.name, count, image })
       .then(res => {
         console.log(res.data)

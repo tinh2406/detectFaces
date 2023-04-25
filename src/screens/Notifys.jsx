@@ -1,8 +1,8 @@
-import {useNetInfo} from '@react-native-community/netinfo';
+import { useNetInfo } from '@react-native-community/netinfo';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-import {useFocusEffect} from '@react-navigation/native';
-import React, {useContext, useState} from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useContext, useState } from 'react';
 import {
   SafeAreaView,
   Text,
@@ -13,14 +13,14 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import {AuthContext} from '../contexts/authContext';
+import { AuthContext } from '../contexts/authContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import deepEqual from 'deep-equal';
 import FormatDate from '../utils/formatDate';
-import {FormatNotify} from '../utils/updateNotify';
-export default function Notifys({navigation}) {
-  const {user, devicesRef} = useContext(AuthContext);
+import { FormatNotify } from '../utils/updateNotify';
+export default function Notifys({ navigation }) {
+  const { user, devicesRef } = useContext(AuthContext);
   const [notifys, setNotifys] = useState();
   const [numOfCurrent, setNumOfCurrent] = useState(10);
   const [loadMoreLoading, setLoadMoreLoading] = useState(false);
@@ -86,7 +86,7 @@ export default function Notifys({navigation}) {
     }, [netInfor, notifys, numOfCurrent, devicesRef]),
   );
   return (
-    <SafeAreaView style={{backgroundColor: 'dodgerblue', flex: 1}}>
+    <SafeAreaView style={{ backgroundColor: 'dodgerblue', flex: 1 }}>
       <Text
         style={{
           textAlign: 'center',
@@ -98,14 +98,14 @@ export default function Notifys({navigation}) {
         }}>
         Notify
       </Text>
-      {notifys?<FlatList
-          data={notifys}
-          renderItem={({item}) => (
-            <Item notify={item} navigation={navigation} />
-          )}
-          keyExtractor={item => item.id}
-          item></FlatList>:<ActivityIndicator size="large" color={'#ffffff'}/>}
-      
+      {notifys ? <FlatList
+        data={notifys}
+        renderItem={({ item }) => (
+          <Item notify={item} navigation={navigation} />
+        )}
+        keyExtractor={item => item.id}
+        item></FlatList> : <ActivityIndicator size="large" color={'#ffffff'} />}
+
       {has && notifys && (
         <View>
           {loadMoreLoading ? (
@@ -127,7 +127,7 @@ export default function Notifys({navigation}) {
   );
 }
 
-const Item = ({notify: {message, createAt, imgPath, id}, navigation}) => {
+const Item = ({ notify: { message, createAt, imgPath, id }, navigation }) => {
   const createAtFormat = FormatDate(createAt);
   const [url, setUrl] = useState();
   useFocusEffect(
@@ -143,9 +143,9 @@ const Item = ({notify: {message, createAt, imgPath, id}, navigation}) => {
       return getUrl;
     }, [imgPath]),
   );
-  const handleLongPress = async () => {};
+  const handleLongPress = async () => { };
   const handlePress = () => {
-    navigation.navigate('Notify', {id});
+    navigation.navigate('Notify', { id });
   };
   return (
     <TouchableOpacity onLongPress={handleLongPress} onPress={handlePress}>
@@ -154,26 +154,40 @@ const Item = ({notify: {message, createAt, imgPath, id}, navigation}) => {
           flex: 1,
           justifyContent: 'space-between',
           flexDirection: 'row',
+
         }}>
         <View
           style={{
+            flex: 1,
+            justifyContent: 'space-between',
+            flexDirection: 'row',
             backgroundColor: 'white',
-            color: 'black',
+            width: '95%',
             borderRadius: 10,
             margin: 8,
             padding: 8,
-            width: '95%',
-          }}>
-          <Text style={{color: 'black', fontSize: 16}}>
-            <Text style={{fontWeight: 'bold'}}>Message: </Text>
-            {message}
-          </Text>
-          <Text style={{color: 'black', fontSize: 16}}>
-            <Text style={{fontWeight: 'bold'}}>Create at: </Text>
-            {createAtFormat}
-          </Text>
+            overflow:'hidden'
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              color: 'black',
+              width: '65%',
+            }}>
+            <Text style={{ color: 'black', fontSize: 16 }}>
+              <Text style={{ fontWeight: 'bold' }}>Message: </Text>
+              {message}
+            </Text>
+            <Text style={{ color: 'black', fontSize: 16 }}>
+              <Text style={{ fontWeight: 'bold' }}>Create at: </Text>
+              {createAtFormat}
+            </Text>
+          </View>
+          {url &&
+            <Image src={url} style={{ width: 40, backgroundColor: "red" }} alt={imgPath}></Image>
+          }
         </View>
-        {url && <Image src={url} style={{width: 40}}></Image>}
       </View>
     </TouchableOpacity>
   );

@@ -13,6 +13,18 @@ export async function FormatNotify(doc) {
         notify = { createAt, device, message: doc.data().message, id: doc.id }
     return notify
 }
+export async function FormatHistory(doc) {
+    const device = (await doc.data().device.get()).data();
+    const createAt = await doc.data().createAt.toDate().toString();
+    const message =await doc.data().message
+    const history = {
+        createAt,
+        device,
+        message,
+        id: doc.id,
+      };
+    return history
+}
 
 export default async function UpdateNotifyBackground() {
     const { phone } = JSON.parse(await AsyncStorage.getItem('user'))

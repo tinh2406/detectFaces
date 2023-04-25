@@ -6,6 +6,7 @@ import React, {useState} from 'react';
 import {FormatNotify} from '../utils/updateNotify';
 import deepEqual from 'deep-equal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import FormatDate from '../utils/formatDate';
 
 export default function Notify({navigation, route}) {
   const [url, setUrl] = useState();
@@ -25,11 +26,14 @@ export default function Notify({navigation, route}) {
         if (!deepEqual(notify, newNotify)) {
           setNotify(newNotify);
         }
+        console.log(notify)
         if (notify && notify.imgPath) {
           if (notify.imgPath.includes('appspot.com/'))
+            imgPath = imgPath.split('appspot.com/')[1];
+          else imgPath=notify.imgPath
             setUrl(
               await storage()
-                .ref(notify.imgPath.split('appspot.com/')[1])
+                .ref(imgPath)
                 .getDownloadURL(),
             );
           console.log(url);
@@ -42,22 +46,51 @@ export default function Notify({navigation, route}) {
     }, [notify, url]),
   );
   return (
-    <SafeAreaView style={{backgroundColor: 'black', flex: 1}}>
+    <SafeAreaView style={{backgroundColor: 'dodgerblue', flex: 1,alignItems:"center"}}>
+      <Text
+        style={{
+          textAlign: 'center',
+          fontSize: 25,
+          fontWeight: 'bold',
+          color: 'black',
+          padding: 4,
+          backgroundColor: 'royalblue',
+          width:"100%"
+        }}>
+        Notify
+      </Text>
       {notify && (
-        <>
-          <Text>{notify.message}</Text>
-          <View style={{flexDirection: 'row'}}>
-            <Text>{notify.device.name}</Text>
-            <Text>{notify.device.addressDoor}</Text>
+        <View style={{width:"80%",marginTop:20}}>
+          <View
+            style={{
+              backgroundColor: 'white',
+              borderRadius:4,
+              padding:8
+            }}>
+            <Text style={{color: 'black',fontSize: 16 }}>
+              <Text style={{ fontWeight: 'bold' }}>Message: </Text>
+              {notify.message}
+            </Text>
+            <Text style={{color: 'black',fontSize: 16 }}>
+              <Text style={{ fontWeight: 'bold' }}>Device: </Text>
+              {notify.device.name}
+            </Text>
+            <Text style={{color: 'black',fontSize: 16 }}>
+              <Text style={{ fontWeight: 'bold' }}>Address wifi: </Text>
+              {notify.device.addressDoor}
+            </Text>
+            <Text style={{color: 'black',fontSize: 16 }}>
+              <Text style={{ fontWeight: 'bold' }}>Create at: </Text>
+              {FormatDate(notify.createAt)}
+            </Text>
           </View>
-          <Text>{notify.createAt}</Text>
           {url && (
             <Image
               src={url}
               resizeMode="center"
               style={{width: '100%', height: 300}}></Image>
           )}
-        </>
+        </View>
       )}
     </SafeAreaView>
   );

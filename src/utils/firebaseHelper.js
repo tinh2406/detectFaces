@@ -8,7 +8,18 @@ export const updateUser = async (fieldName, value, phone) => {
     user[fieldName] = value
     await firestore().collection('users').doc(user.phone).set(user);
 }
-
+export const updateUserMultiField = async (newUser) => {
+    const res = await firestore().collection('users').doc(newUser.phone).get();
+    if (!res.exists) return;
+    const user = res.data()
+    await firestore().collection('users').doc(newUser.phone).set({
+        ...newUser,
+        devices:user.devices,
+        owner:user.owner,
+        password:user.password,
+        phone:user.phone
+    });
+}
 
 export const uploadImage = async (phone, image) => {
     const reference = storage().ref('avatar/');

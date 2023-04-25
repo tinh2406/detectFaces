@@ -1,6 +1,6 @@
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 import axios from 'axios';
-import {useContext, useState} from 'react';
+import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,15 +11,15 @@ import {
   ToastAndroid,
   View,
 } from 'react-native';
-import {AuthContext} from '../contexts/authContext';
+import { AuthContext } from '../contexts/authContext';
 
-export default function AddUser({setAddUser, setUserListPanel}) {
+export default function AddUser({ setAddUser, focus }) {
   // console.log(API_URL)
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [verification, setVerification] = useState('');
   const [openVerify, setOnpenVerify] = useState(false);
-  const {user} = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [wrongVerifyCode, setWrongVerify] = useState(false);
   const [loading, setLoading] = useState(false);
   console.log(user.phone);
@@ -43,8 +43,6 @@ export default function AddUser({setAddUser, setUserListPanel}) {
           if (res.data.message === 'Add account successfully') {
             ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
             setAddUser(false);
-            setUserListPanel(false);
-            setUserListPanel(true);
           }
           console.log(res.data);
           setLoading(false);
@@ -67,8 +65,6 @@ export default function AddUser({setAddUser, setUserListPanel}) {
           if (res.data.message === 'Add account successfully') {
             ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
             setAddUser(false);
-            setUserListPanel(false);
-            setUserListPanel(true);
           } else {
             setLoading(false);
             return;
@@ -81,7 +77,7 @@ export default function AddUser({setAddUser, setUserListPanel}) {
   };
   const handleResendVerifyCode = async () => {
     await axios
-      .post(`${API_URL}:3000/users/resendVerifyCode`, {phone})
+      .post(`${API_URL}:3000/users/resendVerifyCode`, { phone })
       .then(res => {
         console.log(res);
       })
@@ -90,13 +86,14 @@ export default function AddUser({setAddUser, setUserListPanel}) {
       });
   };
   return (
-    <View style={{marginBottom: 16}}>
+    <View style={{ marginBottom: 16 }}>
       <TextInput
         style={styles.textInput}
         value={phone}
         onChangeText={text => setPhone(text)}
         placeholder="Phone number"
         placeholderTextColor="gray"
+        onFocus={focus}
       />
       <TextInput
         style={styles.textInput}
@@ -104,6 +101,7 @@ export default function AddUser({setAddUser, setUserListPanel}) {
         onChangeText={text => setName(text)}
         placeholder="Name user"
         placeholderTextColor="gray"
+        onFocus={focus}
       />
       {openVerify && (
         <TextInput
@@ -111,6 +109,7 @@ export default function AddUser({setAddUser, setUserListPanel}) {
           value={verification}
           onChangeText={text => setVerification(text)}
           placeholder="Verification code"
+          onFocus={focus}
         />
       )}
       {loading ? (
@@ -128,7 +127,7 @@ export default function AddUser({setAddUser, setUserListPanel}) {
       )}
       {wrongVerifyCode && (
         <Text
-          style={{fontSize: 14, color: 'blue'}}
+          style={{ fontSize: 14, color: 'blue' }}
           onPress={handleResendVerifyCode}>
           Resend verification code
         </Text>

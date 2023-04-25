@@ -1,133 +1,71 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Logout from '../utils/logout';
-import {useContext, useEffect, useState} from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
   Button,
   Image,
   KeyboardAvoidingView,
+  Keyboard,
   SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
+  NativeModules,
 } from 'react-native';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import AddUser from '../components/AddUser';
 import UpdatePassword from '../components/UpdatePassword';
-import {AuthContext} from '../contexts/authContext';
+import { AuthContext } from '../contexts/authContext';
 import personImage from '../image/person.png';
 import DownloadImage from '../utils/downloadImage';
-import {uploadImage} from '../utils/firebaseHelper';
+import { uploadImage } from '../utils/firebaseHelper';
 import UserList from '../components/UserList';
-
+import UserDetail from '../components/UserDetail';
 export default function User() {
-  const {user, setUser, setDevicesRef} = useContext(AuthContext);
-  const [image, setImage] = useState(null);
+  const { user, setUser, setDevicesRef } = useContext(AuthContext);
   const [updatePassword, setUpdatePassword] = useState(false);
   const [userListPanel, setUserListPanel] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [addUser, setAddUser] = useState(false);
+  const scrollViewRef = useRef()
+  const [updatePassRef,setUpdatePasswordRef] = useState()
+  const [addUserRef,setAddUserRef] = useState()
+
+
   const handleLogout = async () => {
     await Logout(user, setUser, setDevicesRef);
   };
-  const chooseImage = () => {
-    try {
-      launchImageLibrary({mediaType: 'photo'}, async res => {
-        console.log(res);
-        if (res.assets) {
-          const assets = res.assets;
-          if (assets) {
-            setImage(assets[0].uri);
-          }
-        }
-      }).then(async res => {
-        console.log(res);
-        if (res.assets) {
-          const assets = res.assets;
-          if (assets[0]) {
-            await uploadImage(user.phone, assets[0].uri);
-            await AsyncStorage.setItem('imageUrl', assets[0].uri);
-          }
-        }
-      });
-    } catch (error) {}
-    console.log(image);
-  };
-  useEffect(() => {
-    const unsub = async () => {
-      const res = await AsyncStorage.getItem('imageUrl');
-      if (!res && user.image) {
-        const downloadImage = await DownloadImage(user.image);
-        await AsyncStorage.setItem('imageUrl', downloadImage);
-        setImage(downloadImage);
-      } else {
-        setImage(res);
+  
+  const scrollToUpdatePassword = ()=>{
+    updatePassRef.measureLayout(
+      scrollViewRef.current,
+      (left, top, width, height) => {
+        scrollViewRef.current?.scrollTo({
+          y:top,
+          animated:true
+        })
       }
-      console.log(res, 'abc');
-    };
-    unsub();
-  }, [user]);
-
+    )
+  }
+  const scrollToAddUser=()=>{
+    addUserRef.measureLayout(
+      scrollViewRef.current,
+      (left, top, width, height) => {
+        // console.log(top)
+        scrollViewRef.current?.scrollTo({
+          y:top,
+          animated:true
+        })
+      }
+    )
+  }
+  
   return (
-    <SafeAreaView style={{backgroundColor: 'dodgerblue', flex: 1}}>
-      <ScrollView>
-        <KeyboardAvoidingView behavior="height" style={{marginBottom: 200}}>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              backgroundColor: 'white',
-
-              margin: 16,
-              padding: 12,
-              borderRadius: 10,
-              alignItems: 'center',
-            }}>
-            <TouchableOpacity onPress={chooseImage}>
-              {image ? (
-                <Image
-                  source={{uri: image}}
-                  style={{
-                    width: 75,
-                    height: 75,
-                    borderRadius: 50,
-                    backgroundColor: 'white',
-                    borderWidth: 1,
-                  }}
-                />
-              ) : user.image ? (
-                <Image
-                  src={user.image}
-                  style={{
-                    width: 75,
-                    height: 75,
-                    borderRadius: 50,
-                    backgroundColor: 'white',
-                    borderWidth: 1,
-                  }}
-                />
-              ) : (
-                <Image
-                  source={personImage}
-                  style={{
-                    width: 75,
-                    height: 75,
-                    borderRadius: 50,
-                    backgroundColor: 'white',
-                    borderWidth: 1,
-                  }}
-                />
-              )}
-            </TouchableOpacity>
-            <View style={{marginLeft: 20}}>
-              <Text style={{fontSize: 22, color: 'black', fontWeight: 'bold'}}>
-                {user.name}
-              </Text>
-              <Text style={{fontSize: 18, color: 'black'}}>{user.phone}</Text>
-              {user.owner == true && (
-                <Text style={{fontSize: 18, color: 'black'}}>Owner</Text>
-              )}
-            </View>
-          </View>
+    <SafeAreaView style={{ backgroundColor: 'dodgerblue', flex: 1}}>
+      <ScrollView ref={scrollViewRef}>
+        {/* <KeyboardAvoidingView behavior="position" style={{ marginBottom: 0 }}> */}
+          <UserDetail/>
           {user.owner == true && (
             <TouchableOpacity
               onPress={() => {
@@ -143,7 +81,7 @@ export default function User() {
                   borderTopWidth: 2,
                   paddingLeft: 20,
                 }}>
-                <Text style={{fontSize: 18, color: 'white'}}>User List</Text>
+                <Text style={{ fontSize: 18, color: 'white' }}>User List</Text>
               </View>
             </TouchableOpacity>
           )}
@@ -161,19 +99,22 @@ export default function User() {
                 paddingHorizontal: 20,
                 borderColor: 'white',
                 borderTopWidth: 2,
-              }}>
-              <Text style={{fontSize: 18, color: 'white'}}>
+              }}
+              ref={ref=>{setUpdatePasswordRef(ref)}}
+              >
+              <Text style={{ fontSize: 18, color: 'white' }}>
                 Update password
               </Text>
             </View>
           </TouchableOpacity>
           {updatePassword && (
-            <UpdatePassword setUpdatePassword={setUpdatePassword} />
+            <UpdatePassword setUpdatePassword={setUpdatePassword} focus={scrollToUpdatePassword} />
           )}
           <TouchableOpacity
             onPress={() => {
               setAddUser(!addUser);
-            }}>
+            }}
+            >
             <View
               style={{
                 display: 'flex',
@@ -182,18 +123,20 @@ export default function User() {
                 paddingLeft: 20,
                 borderColor: 'white',
                 borderTopWidth: 2,
-              }}>
-              <Text style={{fontSize: 18, color: 'white'}}>Add user</Text>
+              }}
+            ref={ref=>{setAddUserRef(ref)}}
+            >
+              <Text style={{ fontSize: 18, color: 'white' }}>Add user</Text>
             </View>
           </TouchableOpacity>
           {addUser && (
             <AddUser
               setAddUser={setAddUser}
-              setUserListPanel={setUserListPanel}
+              focus={scrollToAddUser}
             />
           )}
 
-          <View
+          <View 
             style={{
               borderBottomWidth: 2,
               borderBottomColor: 'white',
@@ -211,14 +154,16 @@ export default function User() {
                 borderRadius: 10,
                 alignItems: 'center',
                 justifyContent: 'center',
+                marginBottom:keyboardVisible?300:20 
               }}>
-              <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>
                 Logout
               </Text>
             </View>
           </TouchableOpacity>
-        </KeyboardAvoidingView>
+        {/* </KeyboardAvoidingView> */}
       </ScrollView>
+
     </SafeAreaView>
   );
 }

@@ -14,6 +14,8 @@ import {
 import {AuthContext} from '../contexts/authContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import deepEqual from 'deep-equal';
+import { FormatHistory } from '../utils/updateNotify';
+import FormatDate from '../utils/formatDate';
 
 export default function Historys() {
   const {devicesRef} = useContext(AuthContext);
@@ -59,16 +61,8 @@ export default function Historys() {
           const hists = [];
           await Promise.all(
             snapshot.docs.map(async doc => {
-              const device = (await doc.data().device.get()).data();
-              const createAt = await doc.data().createAt.toDate().toString();
-              const history = {
-                createAt,
-                device,
-                message: doc.data().message,
-                id: doc.id,
-              };
               if (doc.exists) {
-                hists.push(history);
+                hists.push(await FormatHistory(doc));
               }
             }),
           );
@@ -133,6 +127,7 @@ export default function Historys() {
 }
 
 const Item = ({notify: {message, createAt}}) => {
+  const createAtFormat = FormatDate(createAt);
   const handleLongPress = async () => {};
   return (
     <TouchableOpacity onLongPress={handleLongPress}>
@@ -150,7 +145,7 @@ const Item = ({notify: {message, createAt}}) => {
         </Text>
         <Text style={{color: 'black', fontSize: 16}}>
           <Text style={{fontWeight: 'bold'}}>Create at: </Text>
-          {createAt}
+          {createAtFormat}
         </Text>
       </View>
     </TouchableOpacity>
