@@ -11,17 +11,22 @@ import Notifys from '../screens/Notifys';
 import OpenDoor from '../screens/OpenDoor';
 import User from '../screens/User';
 import { AddDeviceTokenToFirebase } from '../utils/firebaseHelper';
+import { DataContext } from '../contexts/dataContext';
+import { View } from 'react-native'
+import { useNetInfo } from '@react-native-community/netinfo';
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator({route}) {
+  const netInfor = useNetInfo();
   const {user} = useContext(AuthContext);
+  const {newData:{isHasNewHistory,isHasNewNotify}}=useContext(DataContext)
   console.log(route);
 
   useFocusEffect(
     React.useCallback(() => {
       const unsub = async () => {
         console.log(user, 'user');
-        if (user) {
+        if (user && netInfor.isConnected) {
           await messaging().registerDeviceForRemoteMessages();
           const token = await messaging().getToken();
           const result = await AddDeviceTokenToFirebase(user.phone,token)
@@ -32,7 +37,7 @@ export default function TabNavigator({route}) {
       return () => {
         unsub;
       };
-    }, [user]),
+    }, [user,netInfor]),
   );
 
   if (!user) return <Login />;
@@ -48,7 +53,8 @@ export default function TabNavigator({route}) {
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({color, size}) => (
-            <Icon name="home" color={color} size={size} />
+            isHasNewHistory?<Icon name="home" color={"red"} size={size+2}/>
+            :<Icon name="home" color={color} size={size}/>
           ),
         }}
       />
@@ -85,7 +91,8 @@ export default function TabNavigator({route}) {
         options={{
           tabBarLabel: 'Notifys',
           tabBarIcon: ({color, size}) => (
-            <Icon name="notifications-active" color={color} size={size} />
+            isHasNewNotify?<Icon name="notifications-active" color={"red"} size={size+2}/>
+            :<Icon name="notifications-active" color={color} size={size} />
           ),
           headerShown: false 
         }}

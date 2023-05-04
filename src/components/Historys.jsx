@@ -1,5 +1,3 @@
-import {useNetInfo} from '@react-native-community/netinfo';
-import firestore from '@react-native-firebase/firestore';
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useContext, useState} from 'react';
 import {
@@ -11,77 +9,19 @@ import {
   Button,
   ActivityIndicator,
 } from 'react-native';
-import {AuthContext} from '../contexts/authContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import deepEqual from 'deep-equal';
-import { FormatHistory } from '../utils/updateNotify';
+
 import FormatDate from '../utils/formatDate';
+import { DataContext } from '../contexts/dataContext';
 
 export default function Historys() {
-  const {devicesRef} = useContext(AuthContext);
-  const [historys, setHistorys] = useState();
-  const [numOfCurrent, setNumOfCurrent] = useState(10);
-  const [has, setHas] = useState(false);
-  const [loadMoreLoading, setLoadMoreLoading] = useState(false);
-  const netInfor = useNetInfo();
-
+  const {history:{historys,updateNumOfHistory,has,loadMoreLoading,setLoadMoreLoading,setIsHasNew}}=useContext(DataContext)
   useFocusEffect(
-    React.useCallback(() => {
-      const getHistorysLocal = async () => {
-        if (!historys) {
-          setHistorys(JSON.parse(await AsyncStorage.getItem('historys')));
-        }
-      };
-      getHistorysLocal();
-      return () => {
-        getHistorysLocal;
-      };
-    }, [historys]),
-  );
-
-  useFocusEffect(
-    React.useCallback(() => {
-      console.log(devicesRef)
-      if (devicesRef && netInfor.isConnected) {
-        const historysRef = firestore()
-          .collection('historys')
-          .where('device', 'in', devicesRef)
-          .orderBy('createAt', 'desc')
-          .limit(numOfCurrent);
-        const unsubscribe = historysRef.onSnapshot(async snapshot => {
-          console.log('có thay đổi');
-          setHas(
-            (
-              await firestore()
-                .collection('historys')
-                .where('device', 'in', devicesRef)
-                .get()
-            ).size > numOfCurrent,
-          );
-          const hists = [];
-          await Promise.all(
-            snapshot.docs.map(async doc => {
-              if (doc.exists) {
-                hists.push(await FormatHistory(doc));
-              }
-            }),
-          );
-
-          if ((historys?.length!=historys?.length || !deepEqual(historys, hists))) {
-            setHistorys(hists);
-            setLoadMoreLoading(false);
-            if (numOfCurrent == 10) {
-              await AsyncStorage.setItem('historys', JSON.stringify(hists));
-            }
-            console.log('reset historys');
-          }
-        });
-        return () => {
-          unsubscribe();
-        };
-      }
-    }, [netInfor, historys, numOfCurrent, devicesRef]),
-  );
+    React.useCallback(
+      ()=>{
+        setIsHasNew(false)
+      ,[]}
+    )
+  )
   return (
     <SafeAreaView style={{backgroundColor: 'dodgerblue', flex: 1}}>
       <Text
@@ -114,7 +54,7 @@ export default function Historys() {
               color="royalblue"
               onPress={() => {
                 setLoadMoreLoading(true);
-                setNumOfCurrent(numOfCurrent + 10);
+                updateNumOfHistory();
               }}
               disabled={loadMoreLoading}
               title="Load more"

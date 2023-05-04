@@ -34,36 +34,40 @@ export default ({ address }) => {
         React.useCallback(() => {
             if (addressBluetooth !== "thieu") {
                 console.log("res connect")
-                BluetoothSerial.connect(addressBluetooth)
-                    .then(res => {
-                        console.log(res, "Connected")
-                        setIsConnected(true)
-                        const id = setInterval(() => {
-                            //   // Hành động cần thực hiện sau mỗi khoảng thời gian
-                            BluetoothSerial.readFromDevice().then(res => {
-                                if (res != "") {
-                                    const _res = (JSON.parse(String(res)))
-                                    console.log(newRes, "Giá trị đọc được")
-                                    setStatus(_res.status == 0 ? false : true)
-                                    if (!deepEqual(_res, newRes)) {
-                                        setNewRes(_res)
+                try {
+                    BluetoothSerial.connect(addressBluetooth)
+                        .then(res => {
+                            console.log(res, "Connected")
+                            setIsConnected(true)
+                            const id = setInterval(() => {
+                                //   // Hành động cần thực hiện sau mỗi khoảng thời gian
+                                BluetoothSerial.readFromDevice().then(res => {
+                                    if (res != "") {
+                                        const _res = (JSON.parse(String(res)))
+                                        console.log(newRes, "Giá trị đọc được")
+                                        setStatus(_res.status == 0 ? false : true)
+                                        if (!deepEqual(_res, newRes)) {
+                                            setNewRes(_res)
+                                        }
+                                        if ((wifiName === "" && newRes)) {
+                                            setWifiName(newRes.wifiName)
+                                            setPassword(newRes.password)
+                                        }
                                     }
-                                    if (wifiName == "" && newRes) {
-                                        setWifiName(newRes.wifiName)
-                                        setPassword(newRes.password)
-                                    }
-                                }
-                            }).catch(error => {
-                                console.log(error, "Lôi đọc")
-                            })
+                                }).catch(error => {
+                                    console.log(error, "Lôi đọc")
+                                })
 
-                        }, 1000);
-                        setIntervalId(id);
-                    })
-                    .catch(error => {
-                        setIsConnected(false)
-                        console.log(error, "connect fail")
-                    })
+                            }, 1000);
+                            setIntervalId(id);
+                        })
+                        .catch(error => {
+                            setIsConnected(false)
+                            console.log(error, "connect fail")
+                        })
+                } catch (error) {
+
+                }
             }
         }, [reConnect, newRes]))
     useFocusEffect(
@@ -158,7 +162,7 @@ export default ({ address }) => {
                     )}
                 </View>
             </TouchableOpacity>
-            <AlertCustom 
+            <AlertCustom
                 isVisible={isModalVisible}
                 OKpress={handleOK}
                 Cancelpress={()=>{setModalVisible(false)}}>

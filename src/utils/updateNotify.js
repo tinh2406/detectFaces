@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore'
 
 export async function FormatNotify(doc) {
-    const device = (await doc.data().device.get()).data();
+    const device = await doc.data().device;
     const createAt = await doc.data().createAt.toDate().toString();
     const imgPath = await doc.data().imgPath
     var notify
@@ -14,7 +14,7 @@ export async function FormatNotify(doc) {
     return notify
 }
 export async function FormatHistory(doc) {
-    const device = (await doc.data().device.get()).data();
+    const device = (await doc.data().device);
     const createAt = await doc.data().createAt.toDate().toString();
     const message =await doc.data().message
     const history = {

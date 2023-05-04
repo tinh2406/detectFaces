@@ -33,7 +33,6 @@ export default function App() {
       console.log(notification)
       Alert.alert(notification.title,notification.body)
     }
-      UpdateNotifyBackground();
     });
 
     return unsubscribe;

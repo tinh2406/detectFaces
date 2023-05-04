@@ -42,7 +42,6 @@ export default function Login() {
     if (password === user.password) {
       await AsyncStorage.setItem('user', JSON.stringify({ ...user, phone }));
       context.setUser({ ...user, phone });
-      context.setDeviceUserRef(res.data().devices)
       setLoadingLogin(false)
       return;
     }
@@ -102,6 +101,7 @@ export default function Login() {
   };
   const handleResendVerifyCode = async () => {
     setResendVerifyCodeLoading(true);
+    console.log(`${API_URL}:3000/users/resendVerifyCode`)
     axios.post(`${API_URL}:3000/users/resendVerifyCode`, {
       phone,
     }).then(res=>{

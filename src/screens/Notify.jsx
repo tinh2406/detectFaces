@@ -2,19 +2,20 @@ import {Image, SafeAreaView, Text, View} from 'react-native';
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useState,useContext} from 'react';
 import {FormatNotify} from '../utils/updateNotify';
 import deepEqual from 'deep-equal';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import FormatDate from '../utils/formatDate';
+import { DataContext } from '../contexts/dataContext';
 
 export default function Notify({navigation, route}) {
   const [url, setUrl] = useState();
+  const {notify:{notifys}}=useContext(DataContext)
   const [notify, setNotify] = useState();
+
   useFocusEffect(
     React.useCallback(() => {
       const fetch = async () => {
-        const notifys = JSON.parse(await AsyncStorage.getItem('notifys'));
         var newNotify = notifys.find(notify => notify.id == route.params.id);
         if (!newNotify) {
           const doc = await firestore()
