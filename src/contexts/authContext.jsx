@@ -11,6 +11,7 @@ export const AuthContext = createContext();
 export default function AuthContextProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState();
+  const [devicesUserRef, setDevicesUserRef] = useState();
   const netInfor = useNetInfo();
   useEffect(
     React.useCallback(() => {
@@ -26,14 +27,37 @@ export default function AuthContextProvider({ children }) {
             console.log('set lai user o day');
             await AsyncStorage.setItem('user', JSON.stringify(getUser));
             setUser(getUser);
+            setDevicesUserRef(doc.data().devices)
+          }
+          if(!devicesUserRef){
+            setDevicesUserRef(doc.data().devices)
           }
         });
-
+        
         return () => unsubscribe();
       }
     }, [user, netInfor]),
     [user, netInfor],
   );
+  useEffect(
+    React.useCallback(() => {
+      if (user && devicesUserRef && netInfor.isConnected) {
+        const unsubscribe = devicesUserRef.onSnapshot(async doc => {
+          const docUser = await firestore().collection('users').doc(user.phone).get();
+          const getUser = await GetUserFirebase(docUser)
+          if (!deepEqual(getUser, user)) {
+            console.log('set lai user o day');
+            await AsyncStorage.setItem('user', JSON.stringify(getUser));
+            setUser(getUser);
+          }
+        });
+        
+        return () => unsubscribe();
+      }
+    }, [user,devicesUserRef, netInfor]),
+    [user,devicesUserRef, netInfor],
+  );
+  
   useEffect(
     React.useCallback(() => {
       const getRegisteredUser = async () => {

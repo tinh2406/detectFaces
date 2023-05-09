@@ -66,9 +66,7 @@ export default function DataContextProvider({ children }) {
           .orderBy('createAt', 'desc')
           .limit(numOfHistory);
         const unsubscribe = historysRef.onSnapshot(async snapshot => {
-          console.log('có thay đổi', snapshot);
           if (snapshot) {
-
             const size = (await firestore()
               .collection('historys')
               .where('phone', '==', phone)
@@ -108,8 +106,6 @@ export default function DataContextProvider({ children }) {
   useEffect(
     React.useCallback(() => {
       if (user && netInfor.isConnected) {
-        console.log(phone,"cailzma")
-        console.log(firestore().collection('notifys').where('phone', '==', phone).orderBy('createAt', 'desc').limit(numOfNotify),"caidjtme")
         const notifysRef = firestore()
           .collection('notifys')
           .where('phone', '==', phone)
