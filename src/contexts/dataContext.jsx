@@ -133,6 +133,7 @@ export default function DataContextProvider({ children }) {
             if (!deepEqual(notifys, notis)) {
               setLoadMoreNotifyLoading(false);
               setNotifys(notis);
+              if(notifys?.length>0)
               setIsHasNewNotify(true)
               if (numOfNotify == 10) {
                 await AsyncStorage.setItem('notifys', JSON.stringify(notis));
