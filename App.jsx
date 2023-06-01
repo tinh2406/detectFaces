@@ -1,60 +1,70 @@
 import messaging from '@react-native-firebase/messaging';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useCallback, useEffect, useState} from 'react';
-import {Alert} from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import TabNavigator from './src/components/TabNavigator';
 import GetFace from './src/screens/GetFace';
 import Notify from './src/screens/Notify';
-import UpdateNotifyBackground from './src/utils/updateNotify';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import Chatting from './src/Chat/Chatting';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState('HomeTabs');
   const navigation = useNavigation();
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async ({notification,data}) => {
+    const unsubscribe = messaging().onMessage(async ({ notification, data }) => {
       try {
-      const message = notification.body;
-      Alert.alert(notification.title, message, [
-        {
-          text: 'Cancel',
-          onPress: () => {},
-          style: 'cancel',
-        },
-        {
-          text: 'View',
-          onPress: () => {
-            navigation.navigate('Notify', {id: data.id});
-          },
-        },
-      ]);
-    } catch (error) {
-      console.log(notification)
-      Alert.alert(notification.title,notification.body)
-    }
+        if (data.message) {
+
+        }
+        else {
+          const message = notification.body;
+          Alert.alert(notification.title, message, [
+            {
+              text: 'Cancel',
+              onPress: () => { },
+              style: 'cancel',
+            },
+            {
+              text: 'View',
+              onPress: () => {
+                navigation.navigate('Notify', { id: data.id });
+              },
+            },
+          ]);
+        }
+      } catch (error) {
+        console.log(notification)
+        Alert.alert(notification.title, notification.body)
+      }
     });
 
     return unsubscribe;
   }, []);
   useEffect(
-     useCallback(()=>{
-      const unsub = messaging().onNotificationOpenedApp(({data}) => {
+    useCallback(() => {
+      const unsub = messaging().onNotificationOpenedApp(({ data }) => {
         // Lấy thông tin từ remoteMessage và chuyển hướng đến màn hình tương ứng
         // Ví dụ: chuyển đến màn hình Message với message ID
-        console.log(data.id)
-        navigation.navigate('Notify', {id: data.id});
+        if (data.message) {
+          navigation.navigate('ChatList', { id: data.id, toChatting: true });
+        }
+        else {
+          navigation.navigate('Notify', { id: data.id });
+        }
       });
       return unsub
-    },[]),[]
+    }, []), []
   )
- 
+
   console.log(initialRoute);
   return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeTabs" component={TabNavigator} />
       <Stack.Screen name="GetFace" component={GetFace} />
       <Stack.Screen name="Notify" component={Notify} />
+      <Stack.Screen name="Chatting" component={Chatting} />
     </Stack.Navigator>
   );
 }

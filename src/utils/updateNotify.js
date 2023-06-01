@@ -16,29 +16,13 @@ export async function FormatNotify(doc) {
 export async function FormatHistory(doc) {
     const device = (await doc.data().device);
     const createAt = await doc.data().createAt.toDate().toString();
-    const message =await doc.data().message
+    const message = await doc.data().message
     const history = {
         createAt,
         device,
         message,
         id: doc.id,
-      };
+    };
     return history
 }
 
-export default async function UpdateNotifyBackground() {
-    const { phone } = JSON.parse(await AsyncStorage.getItem('user'))
-    console.log("Cập nhật thông báo ngầm")
-    const { devices } = (await firestore().collection('users').doc(phone).get()).data()
-    const devices_ = (await devices.get()).data().devices
-    const notifyDocs = await firestore().collection('notifys').where('device', 'in', devices_).orderBy("createAt", 'desc').limit(10).get();
-    const notis = [];
-    await Promise.all(notifyDocs.docs.map(async (doc) => {
-        if (doc.exists) {
-            notis.push(await FormatNotify(doc));
-        }
-    }));
-    if (notis) {
-        await AsyncStorage.setItem('notifys', JSON.stringify(notis))
-    }
-}

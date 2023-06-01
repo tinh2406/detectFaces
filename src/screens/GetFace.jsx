@@ -40,14 +40,14 @@ export default function GetFace({ navigation, route }) {
         console.log(res.data)
         while (true) {
           if (res.data.message === "success") {
-            navigation.navigate("HomeTabs", { screen: "AddFace", message: "add face successfully" })
-            ToastAndroid.show("Thêm khuôn mặt thành công", ToastAndroid.SHORT)
             setTakePicture(true)
             setMessage(undefined)
-            return true
+            navigation.navigate("HomeTabs", { screen: "AddFace", message: "add face successfully" })
+            ToastAndroid.show("Thêm khuôn mặt thành công", ToastAndroid.SHORT)
+            return
           }
           if (res.data.message === "need further data") {
-            if (5 - count == 1) {
+            if (5 - count == 0) {
               setMessage("Chờ xử lí")
               console.log("Chowf xuwr li")
             }
@@ -62,7 +62,6 @@ export default function GetFace({ navigation, route }) {
           setMessage(res.data.message)
           return true
         }
-        setError()
       })
       .catch(error => {
         setError(error.message)
@@ -72,7 +71,7 @@ export default function GetFace({ navigation, route }) {
   if (error) {
     navigation.navigate("HomeTabs", { screen: "AddFace", message: "add face successfully" })
     ToastAndroid.show(`${error}`, ToastAndroid.SHORT)
-
+    return
   }
   return (
     <View style={styles.container}>

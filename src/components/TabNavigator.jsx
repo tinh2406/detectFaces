@@ -14,12 +14,13 @@ import { AddDeviceTokenToFirebase } from '../utils/firebaseHelper';
 import { DataContext } from '../contexts/dataContext';
 import { View } from 'react-native'
 import { useNetInfo } from '@react-native-community/netinfo';
+import ChatList from '../Chat/ChatList';
 const Tab = createBottomTabNavigator();
 
-export default function TabNavigator({route}) {
+export default function TabNavigator({ route }) {
   const netInfor = useNetInfo();
-  const {user} = useContext(AuthContext);
-  const {newData:{isHasNewHistory,isHasNewNotify}}=useContext(DataContext)
+  const { user } = useContext(AuthContext);
+  const { newData: { isHasNewHistory, isHasNewNotify } } = useContext(DataContext)
   console.log(route);
 
   useFocusEffect(
@@ -29,7 +30,7 @@ export default function TabNavigator({route}) {
         if (user && netInfor.isConnected) {
           await messaging().registerDeviceForRemoteMessages();
           const token = await messaging().getToken();
-          const result = await AddDeviceTokenToFirebase(user.phone,token)
+          const result = await AddDeviceTokenToFirebase(user.phone, token)
           console.log(result);
         }
       };
@@ -37,7 +38,7 @@ export default function TabNavigator({route}) {
       return () => {
         unsub;
       };
-    }, [user,netInfor]),
+    }, [user, netInfor]),
   );
 
   if (!user) return <Login />;
@@ -52,26 +53,38 @@ export default function TabNavigator({route}) {
         component={Home}
         options={{
           tabBarLabel: 'Home',
-          tabBarIcon: ({color, size}) => (
-            isHasNewHistory?<Icon name="home" color={"red"} size={size+2}/>
-            :<Icon name="home" color={color} size={size}/>
+          tabBarIcon: ({ color, size }) => (
+            isHasNewHistory ? <Icon name="home" color={"red"} size={size + 2} />
+              : <Icon name="home" color={color} size={size} />
           ),
+        }}
+      />
+      <Tab.Screen
+        name='ChatList'
+        component={ChatList}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Chats',
+          tabBarIcon: ({ color, size }) => (
+            isHasNewNotify ? <Icon name="chat" color={"red"} size={size + 2} />
+              : <Icon name="chat" color={color} size={size} />
+          )
         }}
       />
       <Tab.Screen
         name="AddFace"
         initialParams={
           route?.params?.screen === 'AddFace'
-            ? {message: route.params.message}
+            ? { message: route.params.message }
             : ''
         }
         component={AddFace}
         options={{
           tabBarLabel: 'AddFace',
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: ({ color, size }) => (
             <Icon name="face" color={color} size={size} />
           ),
-          headerShown: false 
+          headerShown: false
         }}
       />
       <Tab.Screen
@@ -79,10 +92,10 @@ export default function TabNavigator({route}) {
         component={OpenDoor}
         options={{
           tabBarLabel: 'OpenDoor',
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: ({ color, size }) => (
             <Icon name="sensor-door" color={color} size={size} />
           ),
-          headerShown: false 
+          headerShown: false
         }}
       />
       <Tab.Screen
@@ -90,11 +103,11 @@ export default function TabNavigator({route}) {
         component={Notifys}
         options={{
           tabBarLabel: 'Notifys',
-          tabBarIcon: ({color, size}) => (
-            isHasNewNotify?<Icon name="notifications-active" color={"red"} size={size+2}/>
-            :<Icon name="notifications-active" color={color} size={size} />
+          tabBarIcon: ({ color, size }) => (
+            isHasNewNotify ? <Icon name="notifications-active" color={"red"} size={size + 2} />
+              : <Icon name="notifications-active" color={color} size={size} />
           ),
-          headerShown: false 
+          headerShown: false
         }}
       />
       <Tab.Screen
@@ -102,7 +115,7 @@ export default function TabNavigator({route}) {
         component={User}
         options={{
           tabBarLabel: 'User',
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: ({ color, size }) => (
             <Icon name="account-circle" color={color} size={size} />
           ),
           // headerShown: false 
