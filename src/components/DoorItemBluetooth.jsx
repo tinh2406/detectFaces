@@ -1,13 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
 import BluetoothSerial from 'react-native-bluetooth-serial';
-import Modal from 'react-native-modal';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
     ActivityIndicator,
     Alert,
     Text,
     TouchableOpacity,
     TextInput,
-    Button,
     View
 } from 'react-native';
 import ToggleSwitch from 'toggle-switch-react-native';
@@ -125,6 +124,15 @@ export default ({ address }) => {
         setPassword("")
         setModalVisible(false)
     };
+    const handleReset = () => {
+        BluetoothSerial.write("reset")
+            .then(res => {
+                console.log("Gui reset thanh cong", res)
+            })
+            .catch(error => {
+                console.log("Gui reset loi", error)
+            })
+    }
     return (
         <>
             <TouchableOpacity onLongPress={handleLongPress}
@@ -147,25 +155,32 @@ export default ({ address }) => {
                         <Text style={{ color: 'black', fontSize: 16 }}>{addressBluetooth}</Text>
                         <Text style={{ color: 'black', fontSize: 16 }}>{name}</Text>
                     </View>
-                    {loading ? (
-                        <ActivityIndicator
-                            size="large"
-                            color={status ? 'gray' : '#00ff00'}
-                        />
-                    ) : (
-                        <ToggleSwitch
-                            isOn={status}
-                            onColor="green"
-                            offColor="gray"
-                            onToggle={handleTogglePress}
-                        />
-                    )}
+                    <View style={{ flexDirection: 'row', alignItems: "center" }}>
+                        <TouchableOpacity
+                            onPress={handleReset}
+                        >
+                            <Icon name="refresh" size={24, 24} color={"gray"} />
+                        </TouchableOpacity>
+                        {loading ? (
+                            <ActivityIndicator
+                                size="large"
+                                color={status ? 'gray' : '#00ff00'}
+                            />
+                        ) : (
+                            <ToggleSwitch
+                                isOn={status}
+                                onColor="green"
+                                offColor="gray"
+                                onToggle={handleTogglePress}
+                            />
+                        )}
+                    </View>
                 </View>
             </TouchableOpacity>
             <AlertCustom
                 isVisible={isModalVisible}
                 OKpress={handleOK}
-                Cancelpress={()=>{setModalVisible(false)}}>
+                Cancelpress={() => { setModalVisible(false) }}>
                 <Text style={{ paddingHorizontal: 4, color: "#ffffff" }}>Wifi</Text>
                 <TextInput
                     placeholder="Wifi name"

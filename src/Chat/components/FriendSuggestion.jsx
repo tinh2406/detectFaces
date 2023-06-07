@@ -115,11 +115,13 @@ export default () => {
                         const users = []
                         await Promise.all(
                             snapshot.docs.map(async doc => {
-                                const name = await doc.data().name
-                                const phone = await doc.data().phone
-                                const image = await doc.data().image
-                                if (doc.exists) {
-                                    users.push({ name, phone, image })
+                                if (doc.data().phone !== user.phone) {
+                                    const name = await doc.data().name
+                                    const phone = await doc.data().phone
+                                    const image = await doc.data().image
+                                    if (doc.exists) {
+                                        users.push({ name, phone, image })
+                                    }
                                 }
                             }),
                         );

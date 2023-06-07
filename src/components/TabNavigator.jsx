@@ -66,8 +66,7 @@ export default function TabNavigator({ route }) {
           headerShown: false,
           tabBarLabel: 'Chats',
           tabBarIcon: ({ color, size }) => (
-            isHasNewNotify ? <Icon name="chat" color={"red"} size={size + 2} />
-              : <Icon name="chat" color={color} size={size} />
+            <Icon name="chat" color={color} size={size} />
           )
         }}
       />
